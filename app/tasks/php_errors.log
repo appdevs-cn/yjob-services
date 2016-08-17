@@ -1,0 +1,2 @@
+[11-Jul-2016 15:20:11 Asia/Shanghai] PHP Warning:  curl_setopt() expects parameter 2 to be long, string given in /Users/Kevin/codes/ylsh_fwzx/app/tasks/ClientTask.php on line 10
+[11-Jul-2016 17:14:32 Asia/Shanghai] PHP Fatal error:  Call to undefined function json_enode() in /Users/Kevin/codes/ylsh_fwzx/app/tasks/ClientTask.php on line 8
