@@ -2,7 +2,33 @@
 
 namespace Controllers;
 
-class ExampleController extends BaseController {
+use Phalcon\Mvc\Controller;
+
+class ExampleController extends Controller {
+
+    public function beforeExecuteRoute($dispatcher)
+    {
+        // 这个方法会在每一个能找到的action前执行
+        if ($dispatcher->getActionName() == 'save') {
+
+            $this->flash->error("You don't have permission to save posts");
+
+            $this->dispatcher->forward(
+                array(
+                    'controller' => 'home',
+                    'action'     => 'index'
+                )
+            );
+
+            return false;
+        }
+    }
+
+    public function afterExecuteRoute($dispatcher)
+    {
+        echo 'sss';
+        // 在找到的action后执行
+    }
 
     public function pingAction() {
         $a = $this->request->getPost('aaa');
@@ -18,6 +44,7 @@ class ExampleController extends BaseController {
     }
     
     public function getAction() {
+
         echo  $this->getCodeByMid('221110410216147026');
         $remote = new \REMOTES\WeixinRemote();
         $remote->getToken();

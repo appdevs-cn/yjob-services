@@ -52,8 +52,8 @@ $routes[] = [
 
 $routes[] = [
     'method' => 'post',
-    'route'  => '/job/add',
-    'handler' => ['Controllers\JobController', 'addAction']
+    'route'  => '/job/create',
+    'handler' => ['Controllers\JobController', 'createAction']
 ];
 
 $routes[] = [
@@ -76,9 +76,16 @@ $routes[] = [
 ];
 
 $routes[] = [
-    'method' => 'get',
+    'method' => 'post',
     'route'  => '/job/list',
     'handler' => ['Controllers\JobController', 'listAction']
+];
+
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/search',
+    'handler' => ['Controllers\JobController', 'searchAction']
 ];
 
 $routes[] = [

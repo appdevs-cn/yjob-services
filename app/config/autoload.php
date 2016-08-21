@@ -8,6 +8,7 @@ $autoload = [
     'Events\Api' => APP_PATH . '/library/events/api/',
     'Micro\Messages' => APP_PATH . '/library/micro/messages/',
     'Utilities\Debug' => APP_PATH . '/library/utilities/debug/',
+    'Utilities\Common' => APP_PATH . '/library/utilities/common/',
     'Security\Hmac' => APP_PATH . '/library/security/hmac/',
     'Application' => APP_PATH . '/library/application/',
     'Interfaces' => APP_PATH . '/library/interfaces/',

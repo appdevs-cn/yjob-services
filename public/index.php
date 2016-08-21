@@ -1,10 +1,16 @@
 <?php
 define('APP_PATH', dirname(__DIR__).'/app/');
+
 define('CONF_PATH', APP_PATH . 'config/');
+
+define('LANG_PATH', APP_PATH . 'lang/');
+
 define('ENV', 'dev');
 
 require APP_PATH . '/library/utilities/debug/PhpError.php';
+
 require APP_PATH . '/library/interfaces/IRun.php';
+
 require APP_PATH . '/library/application/Micro.php';
 
 register_shutdown_function(['Utilities\Debug\PhpError','runtimeShutdown']);
@@ -12,6 +18,7 @@ register_shutdown_function(['Utilities\Debug\PhpError','runtimeShutdown']);
 $config = CONF_PATH .ENV. '/config.php';
 
 $autoLoad = CONF_PATH . 'autoload.php';
+
 $routes = CONF_PATH . 'routes.php';
 
 use \Models\Api as Api;
@@ -25,12 +32,15 @@ try {
 
     $app->setConfig($config);
 
-    // 通过HTTP的HEADER头获取
-    $clientId = $app->request->getHeader('API_ID');
-    $time = $app->request->getHeader('API_TIME');
-    $hash = $app->request->getHeader('API_HASH');
+   // $app->setLang();
 
-    $privateKey = Api::findFirst($clientId)->private_key;
+//
+//    // 通过HTTP的HEADER头获取
+//    $clientId = $app->request->getHeader('API_ID');
+//    $time = $app->request->getHeader('API_TIME');
+//    $hash = $app->request->getHeader('API_HASH');
+//
+//    $privateKey = Api::findFirst($clientId)->private_key;
 
     switch ($_SERVER['REQUEST_METHOD']) {
 
@@ -47,12 +57,16 @@ try {
             parse_str(file_get_contents('php://input'), $data);
             break;
     }
+//
+//    $message = new \Micro\Messages\Auth($clientId, $time, $hash, $data);
+//
+//    $app->setEvents(new \Events\Api\HmacAuthenticate($message, $privateKey));
 
-    $message = new \Micro\Messages\Auth($clientId, $time, $hash, $data);
-
-    $app->setEvents(new \Events\Api\HmacAuthenticate($message, $privateKey));
 
     $app->setRoutes($routes);
+
+    //$app->setLang();
+
     $app->run();
 
 } catch(Exception $e) {

@@ -9,13 +9,15 @@ $settings = array(
         'host' => 'localhost',
         'username' => 'root',
         'password' => '',
-        'name' => 'yl-api',
-        'port' => 3306
+        'name' => 'yservice',
+        'port' => 3306,
+        'log' => '/tmp/sql_debug_'.date("Y-m-d", time()),
     ),
     "redis" => [
         "host" => "localhost",
         "port" => "6379"
-    ]
+    ],
+    'lang' => 'zh-CN',
 );
 
 return $settings;

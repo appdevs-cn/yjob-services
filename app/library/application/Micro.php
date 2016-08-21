@@ -4,10 +4,18 @@ namespace Application;
 
 use Interfaces\IRun as IRun;
 
+use Phalcon\Logger;
+
+use Phalcon\Events\Manager as EventsManager;
+
+use Phalcon\Logger\Adapter\File as FileLogger;
+
 class Micro extends \Phalcon\Mvc\Micro implements IRun {
 
     
     protected $_noAuthPages;
+
+    private $_langLocal;
 
     public function __construct() {
         $this->_noAuthPages = array();
@@ -21,10 +29,11 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
 
         $di = new \Phalcon\DI\FactoryDefault();
 
+
         $di->set('config', new \Phalcon\Config(require $file));
 
         $di->set('db', function() use ($di) {
-           
+
             $type = strtolower($di->get('config')->database->adapter);
 
             $creds = array(
@@ -51,6 +60,17 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
                 throw new Exception('Bad Database Adapter');
             }
 
+            $eventsManager = new EventsManager();
+
+            $logger = new FileLogger($di->get('config')->database->log);
+
+            $eventsManager->attach('db', function ($event, $connection) use ($logger) {
+                if ($event->getType() == 'beforeQuery') {
+                    $logger->log($connection->getSQLStatement(), Logger::INFO);
+                }
+            });
+            $connection->setEventsManager($eventsManager);
+
             return $connection;
         });
         
@@ -68,12 +88,22 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
             return new \Phalcon\Cache\Backend\Redis($frontCache, $redis_conf);
         });
 
+        preg_match("/^[\/]+([^\/]+)/i", $_SERVER['REQUEST_URI'], $match);
+        $fileName = LANG_PATH.$di->get('config')->lang.'/'.$match[1].'.lang.php';
+
+        if (!file_exists($fileName)) {
+
+            throw new \Exception('Unable to load Lang file');
+
+        }
+        $di->set('lang', new \Utilities\Common\Lang(require $fileName));
+
         $this->setDI($di);
     }
 
-    
-    public function setAutoload($file, $dir) {
-        
+
+    public function setAutoload($file) {
+
         if (!file_exists($file)) {
 
                 throw new \Exception('Unable to load autoloader file');
@@ -86,7 +116,6 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
         $loader->registerNamespaces($namespaces)->register();
     }
 
-    
     public function setRoutes($file) {
        
         if (!file_exists($file)) {
@@ -156,19 +185,6 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
         }
     }
     
-    public function setRemotes($file) {
-        if (!file_exists($file)) {
-            
-            throw new \Exception('Unable to load remote file');
-            
-        }
-//        $di = new \Phalcon\DI\FactoryDefault();
-//        
-//        $di->set('remote', new \Phalcon\Config(require $file));
-//            
-//        $this->setDI($di);
-    }
-
     public function setEvents(\Phalcon\Events\Manager $events) {
         
         $this->setEventsManager($events);

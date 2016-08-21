@@ -140,6 +140,7 @@ class UserController extends BaseController
      * @apiGroup user
      * @apiDescription 更新工作意向.
      * @apiParam {Number} uid 用户ID.
+     * @apiParam {Number} intention_id 工作意向ID
      * @apiParam {Number} job_category_id 职位分类ID.
      * @apiParam {Number} job_category_name 职位分类名称.
      * @apiParam {Number} school_id 学校ID.
@@ -176,9 +177,93 @@ class UserController extends BaseController
      * {"status":"100","code":"10000","msg":"获取工作意向成功!", "data":""}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"获取工作意向失败!","data":""}
+     * {"status":"200","code":"10001","msg":"获取工作意向失败!"}
      */
     public function intentionInfoAction() {
+
+    }
+
+
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /user/authUser  实名认证
+     * @apiUse Token
+     * @apiName authUser
+     * @apiGroup user
+     * @apiDescription 实名认证.
+     * @apiParam {Number} uid 用户id.
+     * @apiParam {String} real_name 真是姓名.
+     * @apiParam {String} card_id 身份证号.
+     * @apiParam {String} card_img_a 身份证正面.
+     * @apiParam {String} card_img_b 身份证反面.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"100","code":"10000","msg":"实名认证成功!"}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"200","code":"10001","msg":"实名认证失败!"}
+     */
+    public function authUserAction() {
+
+    }
+
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /user/authUserList  获取认证列表
+     * @apiUse Token
+     * @apiName authUserList
+     * @apiGroup user
+     * @apiDescription 获取认证列表.
+     * @apiParam {Number} status 审核状态(100=>待审核,200=>已通过).
+     * @apiParam {Number} page 页码.
+     * @apiParam {Number} size 每页返回数量.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"100","code":"10000","msg":"获取认证列表成功!","data":""}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"200","code":"10001","msg":"获取认证列表失败!"}
+     */
+    public function authUserListAction() {
+
+    }
+
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /user/authVerify  认证审核
+     * @apiUse Token
+     * @apiName authVerify
+     * @apiGroup user
+     * @apiDescription 认证审核.
+     * @apiParam {Number} varify_id 申请认证id
+     * @apiParam {Number} status 审核状态(100=>通过,200=>拒绝).
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"100","code":"10000","msg":"审核成功!"}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"200","code":"10001","msg":"审核失败!"}
+     */
+    public function authVerifyAction() {
+
+    }
+
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /user/reputation  获取信誉值
+     * @apiUse Token
+     * @apiName reputation
+     * @apiGroup user
+     * @apiDescription 获取信誉值.
+     * @apiParam {String} uid 用户id.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"100","code":"10000","msg":"获取信誉值成功!", "data":""}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"200","code":"10001","msg":"获取信誉值失败!"}
+     */
+    public function reputationAction() {
 
     }
 

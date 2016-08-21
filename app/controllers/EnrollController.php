@@ -26,9 +26,11 @@ class EnrollController extends BaseController {
      * @apiName add
      * @apiGroup enroll
      * @apiDescription 职位报名.
+     * @apiParam {Number} uid 用户ID.
      * @apiParam {Number} job_id 职位ID.
      * @apiParam {Number} job_info_id 点位ID.
-     * @apiParam {Number} uid 用户ID.
+     * @apiParam {Number} resume_id 简历ID
+     * @apiParam {Number} enroll_type 报名方式(100=>正常报名,200=>续约报名).
      * @apiParam {Number} date 日期.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
@@ -49,8 +51,6 @@ class EnrollController extends BaseController {
      * @apiGroup enroll
      * @apiDescription 职位报名.
      * @apiParam {Number} enroll_id 报名id.
-     * @apiParam {Number} job_id 职位ID.
-     * @apiParam {Number} job_info_id 点位ID.
      * @apiParam {String} desc 备注.
      * @apiParam {Number} station_type 岗位类型(100=>普通,200=>督导).
      * @apiUse Response
@@ -71,10 +71,11 @@ class EnrollController extends BaseController {
      * @apiName list
      * @apiGroup enroll
      * @apiDescription 获取职位报名列表.
-     * @apiParam {Number} job_id 用户id.
-     * @apiParam {Number} uid 职位ID.
+     * @apiParam {Number} job_id 职位ID.
+     * @apiParam {Number} uid 用户id.
      * @apiParam {Number} date 工作时间.
-     * @apiParam {Number} status 报名状态(100=>等待操作,200=>通过,201=>已完成,300=>弃用,400=>取消,500=>放鸽子,600=>备用)',
+     * @apiParam {Number} enroll_type 报名方式(100=>正常报名,200=>续约报名).
+     * @apiParam {Number} status 报名状态(100=>等待操作,200=>通过,301=>已完成,302=>放鸽子,303=>早退,400=>弃用,500=>取消,600=>备用)',
      * @apiParam {Number} station_type 岗位类型(100=>普通,200=>督导).
      * @apiParam {Number} check_status 查看状态(100=>未查看,200=>已查看)
      * @apiParam {Number} sort 岗位类型(100=>默认排序,200=>点位排序).
@@ -99,8 +100,7 @@ class EnrollController extends BaseController {
      * @apiGroup enroll
      * @apiDescription 状态审核.
      * @apiParam {Number[]} enroll_ids 报名id.
-     * @apiParam {Number} job_id 职位ID.
-     * @apiParam {Number} status 审核状态(200=>通过,201=>已完成,300=>弃用,400=>取消,500=>放鸽子,600=>备用).
+     * @apiParam {Number} status 审核状态(200=>通过,301=>已完成,302=>放鸽子,303=>早退,400=>弃用,500=>取消,600=>备用).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
      * {"status":"100","code":"10000","msg":"审核成功!"}
@@ -112,5 +112,46 @@ class EnrollController extends BaseController {
 
     }
 
+
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /enroll/stood  标记放鸽子
+     * @apiUse Token
+     * @apiName stood
+     * @apiGroup enroll
+     * @apiDescription 标记放鸽子.
+     * @apiParam {Number} enroll_id 报名ID.
+     * @apiParam {Number} status 状态(100=>标记,200=>取消标记).
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"100","code":"10000","msg":"标记成功"}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"200","code":"10001","msg":"标记失败"}
+     */
+
+    public function stoodAction() {
+
+    }
+
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /enroll/leaveEarly  标记早退
+     * @apiUse Token
+     * @apiName leaveEarly
+     * @apiGroup enroll
+     * @apiDescription 标记早退.
+     * @apiParam {Number} enroll_id 报名ID.
+     * @apiParam {Number} status 状态(100=>标记,200=>取消标记).
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"100","code":"10000","msg":"标记成功"}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"200","code":"10001","msg":"标记失败"}
+     */
+    public function leaveEarlyAction() {
+
+    }
 
 }

@@ -7,10 +7,7 @@ class RemoteCall {
     /**
      * Log error to database
      *
-         * @param int		php error number
-         * @param string	php error description
-         * @param string	php file where the error occured
-         * @param int		php line where the error occured
+     * @param  Object $RequestInfo
      * @return bool
      */
     public static function logToDb($RequestInfo) {
