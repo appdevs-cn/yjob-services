@@ -5,7 +5,7 @@ define('CONF_PATH', APP_PATH . 'config/');
 
 define('LANG_PATH', APP_PATH . 'lang/');
 
-define('ENV', 'dev');
+define('ENV', 'production');
 
 require APP_PATH . '/library/utilities/debug/PhpError.php';
 
