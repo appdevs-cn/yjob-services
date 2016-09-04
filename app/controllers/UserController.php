@@ -1,11 +1,16 @@
 <?php
 namespace Controllers;
 
+use Models\Evaluate;
 use Models\Intention;
+use Models\JobTeam;
 use Models\Verify;
+use Models\Work;
 use Utilities\Common\Lang;
 
 use Models\User;
+
+use Models\WorkCounter;
 
 class UserController extends BaseController
 {
@@ -27,13 +32,13 @@ class UserController extends BaseController
      private $work_date = array(
          101 => '周一',
          102 => '周二',
-         103 =>'周三',
+         103 => '周三',
          104 => '周四',
-         105 =>'周五',
-         106 =>'周六',
-         107 =>'周日',
-         201 =>'寒假',
-         202 =>'暑假'
+         105 => '周五',
+         106 => '周六',
+         107 => '周日',
+         201 => '寒假',
+         202 => '暑假'
      );
     /**
      * @apiVersion 1.0.0
@@ -300,10 +305,10 @@ class UserController extends BaseController
      * @apiParam {Number} work_date '工作时间(101=>周一,102＝>周二,103=>周三,104=>周四,105=>周五,106=>周六,107=>周日,201=>寒假,202=>暑假).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"添加成功!"}
+     * {"status":"SUCCESS","code":"0","msg":"添加成功!"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"添加失败!"}
+     * {"status":"FAILD","code":"10001","msg":"添加失败!"}
      */
     public function addIntentionAction() {
         if(!$this->_params['uid']) {
@@ -604,18 +609,61 @@ class UserController extends BaseController
      * @apiName reputation
      * @apiGroup user
      * @apiDescription 获取信誉值.
-     * @apiParam {String} uid 用户id.
+     * @apiParam {Number} uid 职位ID.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"获取信誉值成功!", "data":""}
+     * {"status":"SUCCESS","code":"0","msg":"获取信誉值成功!", "data":"{
+    "info": {
+    "mount_guard": "50",
+    "cancel": "10",
+    "stood": "20",
+    "leaveEarly": "12",
+    "punctual": 0,
+    "earnest": 0,
+    "effect": 0,
+    "performance": 0,
+    "ability": 0
+    }
+    }"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"获取信誉值失败!"}
+     * {"status":"FAILD","code":"10001","msg":"获取信誉值失败!"}
      */
     public function reputationAction() {
+        if(!$this->_params['uid']) {
+            return $this->responseJson("FAILD", Lang::_M(RESUME_UID_NO_EMPTY));
+        }
+        $where['uid'] = $this->_params['uid'];
+        $userCounter = new WorkCounter();
+        $counterinfo = $userCounter->findOne($where);
+        if(!$counterinfo) {
+            return $this->responseJson("FAILD", Lang::_M(USER_WORK_INFO_EMPTY));
+
+        }
+        $return['mount_guard'] = $counterinfo->mount_guard ? $counterinfo->mount_guard : 0;
+        $return['cancel'] = $counterinfo->cancel ? $counterinfo->cancel : 0;
+        $return['stood'] = $counterinfo->stood ? $counterinfo->stood : 0;
+        $return['leaveEarly'] = $counterinfo->leaveEarly ? $counterinfo->leaveEarly : 0;
+        $evaluteModel = new Evaluate();
+        $evainfo = $evaluteModel->findAll($where);
+        if($evainfo) {
+            $evainList = $evainfo->toArray();
+            foreach($evainList as $ek => $einfo) {
+                $punctualTmp += $einfo['punctual'];
+                $earnestTmp += $einfo['earnest'];
+                $effectTmp += $einfo['effect'];
+                $performanceTmp += $einfo['performance'];
+                $abilityTmp += $einfo['ability'];
+            }
+
+        }
+        $return['punctual'] = $punctualTmp ? round(($punctualTmp / $counterinfo->mount_guard )) * 100 : 0;
+        $return['earnest'] = $earnestTmp ? round(($earnestTmp / $counterinfo->mount_guard)) * 100 : 0;
+        $return['effect'] = $effectTmp ? round(($effectTmp / $counterinfo->mount_guard)) * 100 : 0;
+        $return['performance'] = $performanceTmp ? round(($performanceTmp / $counterinfo->mount_guard)) * 100 : 0;
+        $return['ability'] = $abilityTmp ? round(($abilityTmp / $counterinfo->mount_guard)) * 100 : 0;
+        return $this->responseJson("SUCCESS", Lang::_M(GET_USER_REPUTATION_SUCCESS), array('info' => $return));
 
     }
-
-
 
 }

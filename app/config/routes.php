@@ -198,6 +198,19 @@ $routes[] = [
     'route'  => '/user/authVerify',
     'handler' => ['Controllers\UserController', 'authVerifyAction']
 ];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/jobStatistics',
+    'handler' => ['Controllers\JobController', 'jobStatisticsAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/reputation',
+    'handler' => ['Controllers\UserController', 'reputationAction']
+];
+
 return $routes;
 
 

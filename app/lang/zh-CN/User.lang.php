@@ -52,5 +52,7 @@ $_LANG['VERIFY_STATUS_NOT_TMPEY'] = ['codes'=> 10001, 'msg' => '操作状态不�
 $_LANG['VERIFY_INFO_NOT_EXIST'] = ['codes'=> 10001, 'msg' => '认证信息不存在!'];
 $_LANG['VERIFY_USER_SUCCESS'] = ['codes'=> 0, 'msg' => '审核成功!'];
 $_LANG['VERIFY_USER_FAILD'] = ['codes'=> 10001, 'msg' => '审核失败!'];
-
+$_LANG['VERIFY_USER_FAILD'] = ['codes'=> 10001, 'msg' => '审核失败!'];
+$_LANG['GET_USER_REPUTATION_SUCCESS'] = ['codes'=> 0, 'msg' => '获取荣誉值成功!'];
+$_LANG['USER_WORK_INFO_EMPTY'] = ['codes'=> 10001, 'msg' => '找不到该用户的工作信息!'];
 return $_LANG;

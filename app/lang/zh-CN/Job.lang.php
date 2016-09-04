@@ -91,6 +91,8 @@ $_LANG['EVALUATE_USER_FAILD'] = ['codes'=> 10001, 'msg' => '评价失败!'];
 $_LANG['EVALUATE_USER_SUCCESS'] = ['codes'=> 0, 'msg' => '评价成功!'];
 $_LANG['EVALUATE_GET_INFO_FAILD'] = ['codes'=> 10001, 'msg' => '获取评价详情失败!'];
 $_LANG['EVALUATE_GET_INFO_SUCCESS'] = ['codes'=> 0, 'msg' => '获取评价详情成功!'];
+$_LANG['JOB_GET_RATE_SUCCESS'] = ['codes'=> 0, 'msg' => '获取评分成功!'];
+
 
 
 return $_LANG;

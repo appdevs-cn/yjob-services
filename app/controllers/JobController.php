@@ -18,6 +18,10 @@ use Models\JobFav;
 
 use Models\Enrol;
 
+use Models\JobTeam;
+
+use Models\JobCounter;
+
 use Phalcon\Mvc\Model\Resultset\Simple as Resultset;
 
 class JobController extends BaseController {
@@ -1600,6 +1604,120 @@ class JobController extends BaseController {
             return $this->responseJson("FAILD", Lang::_M(EVALUATE_GET_INFO_FAILD));
         }
         return $this->responseJson("SUCCESS", Lang::_M(EVALUATE_GET_INFO_SUCCESS), $enrollEvalueateInfo->toArray());
+    }
+
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /job/statistics  获取点位统计信息
+     * @apiUse Token
+     * @apiName reputation
+     * @apiGroup Jobs
+     * @apiDescription 获取信誉值.
+     * @apiParam {Number} job_id 职位ID.
+     * @apiParam {Number} job_info_id 点位ID.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"SUCCESS","code":"0","msg":"获取统计信息成功!", "data":"{
+    "list": {
+    "22": {
+    "sign_in_rate": 93,
+    "sign_in": "28",
+    "sign_in_valid": "26",
+    "sign_out": "28",
+    "sign_out_valid": "25",
+    "EveluaCount": "24",
+    "fEveluaCount": 6,
+    "sign_in_vitiation": 2,
+    "sign_out_vitiation": 3,
+    "punctual_rate": 1,
+    "earnest_rate": 0,
+    "ability_rate": 1,
+    "effect_rate": 1,
+    "performance_rate": 0,
+    "evaelua_rate": 3,
+    "total_rate": 0.84466666666667
+    }
+    },
+    "total_rate": 84
+    }"}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"FAILD","code":"10001","msg":"获取统计信息失败!"}
+     */
+    public function jobStatisticsAction() {
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD", Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        //应签到
+        $JobTeamModel = new JobTeam();
+        $where[] = 'job_id='.$this->_params['job_id'];
+        $this->_params['job_info_id'] && $where[] = 'id='.$this->_params['job_info_id'];
+            $jobInfoObject = new JobInfo();
+            $jonInfoList = $jobInfoObject->find(implode(' AND ', $where))->toArray();
+        if(!$jonInfoList) {
+        }
+        foreach($jonInfoList as $jinfoK => $jinfo) {
+            $jwhere['job_info_id'] = $jinfo['id'];
+            $jobTeamUserCount = $JobTeamModel->getCount($jwhere);
+            $jobTeamUserCount = 30;
+            //实际签到
+            $jobCounter = new JobCounter();
+            $counterInfo = $jobCounter->findOne($jwhere);
+            //签到率
+            $return['list'][$jinfo['id']]['sign_in_rate'] = round(($counterInfo->sign_in / $jobTeamUserCount) * 100);
+            //签到人数
+            $return['list'][$jinfo['id']]['sign_in'] = $counterInfo->sign_in;
+            //有效签到人数
+            $return['list'][$jinfo['id']]['sign_in_valid'] = $counterInfo->sign_in_valid;
+            //签退人数
+            $return['list'][$jinfo['id']]['sign_out'] = $counterInfo->sign_out;
+            //有效签退人数
+            $return['list'][$jinfo['id']]['sign_out_valid'] = $counterInfo->sign_out_valid;
+            //评价人数
+            $return['list'][$jinfo['id']]['EveluaCount'] = $counterInfo->evaluate;
+            //忘记评价数
+            $return['list'][$jinfo['id']]['fEveluaCount'] = $jobTeamUserCount - $counterInfo->evaluate;
+            //未签到
+            $return['list'][$jinfo['id']]['sign_in_vitiation'] = $counterInfo->sign_in - $counterInfo->sign_in_valid;
+            //未签退
+            $return['list'][$jinfo['id']]['sign_out_vitiation'] = $counterInfo->sign_out - $counterInfo->sign_out_valid;
+            $eModel = new Evaluate();
+            $elist = $eModel->findAll($jwhere);
+
+            if(!$elist) {
+                continue;
+            }
+            $elist = $elist->toArray();
+
+            foreach($elist as $ek => $ev) {
+                $punctualTmp += ($ev['punctual'] / 5) * 0.3;
+                $earnestTmp += ($ev['earnest'] / 5) * 0.2;
+                $abilityTmp += ($ev['ability'] / 5) * 0.25;
+                $effectTmp += ($ev['effect'] / 5) * 0.2;
+                $performanceTmp  += ($ev['performance'] / 5) * 0.05;
+                $totalTmp += ($ev['punctual'] / 5) * 0.3 + ($ev['earnest'] / 5) * 0.2 + ($ev['ability'] / 5) * 0.25 + ($ev['effect'] / 5) * 0.2 + ($ev['performance'] / 5) * 0.05;
+
+            }
+            $return['list'][$jinfo['id']]['punctual_rate'] = round(($punctualTmp / $counterInfo->evaluate) * 100);
+            $return['list'][$jinfo['id']]['earnest_rate'] = round(($earnestTmp / $counterInfo->evaluate) * 100);
+            $return['list'][$jinfo['id']]['ability_rate'] = round(($abilityTmp / $counterInfo->evaluate) * 100);
+            $return['list'][$jinfo['id']]['effect_rate'] = round(($effectTmp / $counterInfo->evaluate) * 100);
+            $return['list'][$jinfo['id']]['performance_rate'] = round(($performanceTmp / $counterInfo->evaluate) * 100);
+            $return['list'][$jinfo['id']]['evaelua_rate'] = round(($totalTmp / $counterInfo->evaluate) * 100);
+            $sign_in_rate = ($counterInfo->sign_in / $jobTeamUserCount) * 0.7;
+            $sign_in_valid_rate = ($counterInfo->sign_in_valid / $jobTeamUserCount) * 0.3;
+            $sign_in_total = ($sign_in_rate + $sign_in_valid_rate) *0.5;
+            $sign_out_rate = ($counterInfo->sign_out / $jobTeamUserCount) * 0.6;
+            $sign_out_valid_rate = ($counterInfo->sign_out_valid / $jobTeamUserCount) * 0.4;
+            $sign_out_total = ($sign_out_rate + $sign_out_valid_rate) *0.3;
+            $evalua_rate = ($counterInfo->evaluate / $jobTeamUserCount);
+            $evalua_rate_total = $evalua_rate * 0.15 * 1;
+            $return['list'][$jinfo['id']]['total_rate'] = ($sign_in_total + $sign_out_total + $evalua_rate_total);
+            $return['total_rate'] += $return['list'][$jinfo['id']]['total_rate'];
+        }
+        $return['total_rate'] = round($return['total_rate'] / count($jonInfoList) * 100);
+
+        return $this->responseJson("SUCCESS", Lang::_M(JOB_GET_RATE_SUCCESS), $return);
     }
 
 }
