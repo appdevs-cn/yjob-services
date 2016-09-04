@@ -9,47 +9,6 @@ $routes[] = [
 ];
 
  */
-
-$routes[] = [
-    'method' => 'post', 
-    'route' => '/ping', 
-    'handler' => ['Controllers\ExampleController', 'pingAction'],
-    'authentication' => FALSE
-];
-
-
-$routes[] = [
-    'method' => 'post', 
-    'route' => '/test/{id}', 
-    'handler' => ['Controllers\ExampleController', 'testAction']
-];
-
-$routes[] = [
-    'method' => 'post', 
-    'route' => '/skip/{name}', 
-    'handler' => ['Controllers\ExampleController', 'skipAction'],
-    'authentication' => FALSE
-];
-
-$routes[] = [
-    'method' => 'get', 
-    'route' => '/ping', 
-    'handler' => ['Controllers\ExampleController', 'getAction'],
-    'authentication' => FALSE
-];
-
-$routes[] = [
-    'method' => 'put', 
-    'route' => '/ping', 
-    'handler' => ['Controllers\ExampleController', 'putAction']
-];
-
-$routes[] = [
-    'method' => 'delete', 
-    'route' => '/ping', 
-    'handler' => ['Controllers\ExampleController', 'deleteAction']
-];
-
 $routes[] = [
     'method' => 'post',
     'route'  => '/job/create',
@@ -65,13 +24,13 @@ $routes[] = [
 
 $routes[] = [
     'method' => 'get',
-    'route'  => '/job/info',
+    'route'  => '/job/info/{id}',
     'handler' => ['Controllers\JobController', 'infoAction']
 ];
 
 $routes[] = [
     'method' => 'post',
-    'route'  => '/job/del',
+    'route'  => '/job/delete',
     'handler' => ['Controllers\JobController', 'deleteAction']
 ];
 
@@ -91,7 +50,7 @@ $routes[] = [
 $routes[] = [
     'method' => 'post',
     'route'  => '/job/Refresh',
-    'handler' => ['Controllers\JobController', 'RefreshAction']
+    'handler' => ['Controllers\JobController', 'refreshAction']
 ];
 
 $routes[] = [
@@ -112,6 +71,133 @@ $routes[] = [
     'handler' => ['Controllers\JobController', 'autoRefreshAction']
 ];
 
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/favJob',
+    'handler' => ['Controllers\JobController', 'favJobAction']
+];
+
+$routes[] = [
+    'method' => 'get',
+    'route'  => '/job/favlist/{uid}',
+    'handler' => ['Controllers\JobController', 'favJobListAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/past',
+    'handler' => ['Controllers\JobController', 'pastAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/pastList',
+    'handler' => ['Controllers\JobController', 'pastListAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/confirm',
+    'handler' => ['Controllers\JobController', 'confirmAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/evaluate',
+    'handler' => ['Controllers\JobController', 'evaluateAction']
+];
+
+$routes[] = [
+    'method' => 'get',
+    'route'  => '/job/evaluateInfo/{eid}',
+    'handler' => ['Controllers\JobController', 'evaluateInfoAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/add',
+    'handler' => ['Controllers\EnrollController', 'addAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/update',
+    'handler' => ['Controllers\EnrollController', 'updateAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/status',
+    'handler' => ['Controllers\EnrollController', 'statusAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/stood',
+    'handler' => ['Controllers\EnrollController', 'stoodAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/leaveEarly',
+    'handler' => ['Controllers\EnrollController', 'leaveEarlyAction']
+];
+
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/addResume',
+    'handler' => ['Controllers\UserController', 'addResumeAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/resumeInfo',
+    'handler' => ['Controllers\UserController', 'resumeInfoAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/resumeList',
+    'handler' => ['Controllers\UserController', 'resumeListAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/addIntention',
+    'handler' => ['Controllers\UserController', 'addIntentionAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/updateIntention',
+    'handler' => ['Controllers\UserController', 'updateIntentionAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/intentionInfo',
+    'handler' => ['Controllers\UserController', 'intentionInfoAction']
+];
+
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/authUser',
+    'handler' => ['Controllers\UserController', 'authUserAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/authUserList',
+    'handler' => ['Controllers\UserController', 'authUserListAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/user/authVerify',
+    'handler' => ['Controllers\UserController', 'authVerifyAction']
+];
 return $routes;
 
 

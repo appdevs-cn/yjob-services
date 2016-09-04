@@ -1,6 +1,11 @@
 <?php
 namespace Controllers;
 
+use Models\Enroll;
+use Models\Job;
+use Models\JobInfo;
+use Utilities\Common\Lang;
+
 class EnrollController extends BaseController {
 
     /**
@@ -34,13 +39,55 @@ class EnrollController extends BaseController {
      * @apiParam {Number} date 日期.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"报名成功"}
+     * {"status":"SUCCESS","code":"0","msg":"报名成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"报名失败"}
+     * {"status":"FAILD","code":"10001","msg":"报名失败"}
      */
     public function addAction() {
-
+        if(!$this->_params['uid']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_UID_NOT_EMPTY));
+        }
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD", Lang::_M(JOB_INFO_IDS_NO_EMPTY));
+        }
+        if(!$this->_params['job_info_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_UID_NOT_EMPTY));
+        }
+        if(!$this->_params['resume_id']) {
+            return $this->responseJson("FAILD", Lang::_M(RESUME_ID_NOT_EMPTY));
+        }
+        if(!$this->_params['date']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_DATE_NOT_EMPTY));
+        }
+        $existWhere['uid'] = $this->_params['uid'];
+        $existWhere['job_info_id'] = $this->_params['job_info_id'];
+        $existWhere['resume_id'] = $this->_params['resume_id'];
+        $existWhere['work_date'] = $this->_params['date'];
+        $enrollModel = new Enroll();
+        if($enrollModel->findOne($existWhere)) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_NO_REPEAT));
+        }
+        $jobModel = new Job();
+        $jobInfo = $jobModel->findFirst($this->_params['job_id']);
+        if(empty($jobInfo->job_name)) {
+            return $this->responseJson("FAILD", Lang::_M(JOB_INFO_NO_EXISE));
+        }
+        $enrollInfo['uid'] = $this->_params['uid'];
+        $enrollInfo['job_info_id'] = $this->_params['job_info_id'];
+        $enrollInfo['job_id'] = $this->_params['job_id'];
+        $enrollInfo['resume_id'] = $this->_params['resume_id'];
+        $enrollInfo['work_date'] = $this->_params['date'];
+        $enrollInfo['enroll_type'] = $this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100 ;
+        $enrollInfo['position_type'] = $this->_params['position_type'] ? $this->_params['position_type'] : 100;
+        $enrollInfo['apply_time'] = $this->_params['apply_time'] ? $this->_params['apply_time'] : time();
+        $enrollInfo['create_time'] = $enrollInfo['update_time'] = time();
+        $enrollInfo['job_name'] = $jobInfo->job_name;
+        $enrollRst = $enrollModel->create($enrollInfo);
+        if(!$enrollRst) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_FAILD));
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_SUCCESS));
     }
 
     /**
@@ -52,16 +99,31 @@ class EnrollController extends BaseController {
      * @apiDescription 职位报名.
      * @apiParam {Number} enroll_id 报名id.
      * @apiParam {String} desc 备注.
-     * @apiParam {Number} station_type 岗位类型(100=>普通,200=>督导).
+     * @apiParam {Number} job_info_id 职位点位ID.
+     * @apiParam {Number} position_type 岗位类型(100=>普通,200=>督导).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"更新成功!"}
+     * {"status":"SUCCESS","code":"0","msg":"更新成功!"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"更新失败!"}
+     * {"status":"FAILD","code":"10001","msg":"更新失败!"}
      */
     public function updateAction() {
-
+        if(!$this->_params['enroll_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        $this->_params['job_info_id'] && $enrollInfo['job_info_id'] = $this->_params['job_info_id'];
+        $this->_params['desc'] && $enrollInfo['remark'] = $this->_params['desc'];
+        $this->_params['position_type'] && $enrollInfo['position_type'] = $this->_params['position_type'];
+        $enrollMode = new Enroll();
+        $enrollTmp = $enrollMode->findOne(array('id' => $this->_params['enroll_id']));
+        if(!$enrollTmp) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        if(!$enrollTmp->save($enrollInfo)) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_UPDATE_FAILD));
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS));
     }
 
     /**
@@ -83,10 +145,10 @@ class EnrollController extends BaseController {
      * @apiParam {Number} size 每页返回数量.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":" 获取职位报名列表成功!","data":""}
+     * {"status":"SUCCESS","code":"0","msg":" 获取职位报名列表成功!","data":""}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"获取职位报名列表失败!"}
+     * {"status":"FAILD","code":"10001","msg":"获取职位报名列表失败!"}
      */
     public function listAction() {
 
@@ -100,16 +162,33 @@ class EnrollController extends BaseController {
      * @apiGroup enroll
      * @apiDescription 状态审核.
      * @apiParam {Number[]} enroll_ids 报名id.
-     * @apiParam {Number} status 审核状态(200=>通过,301=>已完成,302=>放鸽子,303=>早退,400=>弃用,500=>取消,600=>备用).
+     * @apiParam {Number} status 审核状态(200=>通过,300=>已完成,400=>弃用,500=>取消,600=>备用).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"审核成功!"}
+     * {"status":"SUCCESS","code":"0","msg":"审核成功!"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"审核失败!"}
+     * {"status":"FAILD","code":"10001","msg":"审核失败!"}
      */
     public function statusAction() {
-
+        if(!$this->_params['enroll_ids']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        if(!$this->_params['status']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_STATUS_NOT_EMPTY));
+        }
+        $enrollModel = new Enroll();
+        foreach($this->_params['enroll_ids'] as $ek => $eid) {
+            $where['id'] = $eid;
+            $eInfo = $enrollModel->findOne($where);
+            if(!$eInfo) {
+                return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+            }
+            $updateInfo['status'] = $this->_params['status'];
+            $urs = $eInfo->save($updateInfo);
+            $returnList[$eid] = $urs ? 100 : 200;
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS), $returnList);
     }
 
 
@@ -124,14 +203,28 @@ class EnrollController extends BaseController {
      * @apiParam {Number} status 状态(100=>标记,200=>取消标记).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"标记成功"}
+     * {"status":"SUCCESS","code":"0","msg":"标记成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"标记失败"}
+     * {"status":"FAILD","code":"10001","msg":"标记失败"}
      */
 
     public function stoodAction() {
-
+        if(!$this->_params['enroll_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        if(!$this->_params['status']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_STATUS_NOT_EMPTY));
+        }
+        $enrollModel = new Enroll();
+        $where['id'] = $this->_params['enroll_id'];
+        $eInfo = $enrollModel->findOne($where);
+        if(!$eInfo) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        $updateInfo['stood'] = $this->_params['status'] == 100 ? 200 : 100;
+        $urs = $eInfo->save($updateInfo);
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS));
     }
 
     /**
@@ -145,12 +238,27 @@ class EnrollController extends BaseController {
      * @apiParam {Number} status 状态(100=>标记,200=>取消标记).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"标记成功"}
+     * {"status":"SUCCESS","code":"0","msg":"标记成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"标记失败"}
+     * {"status":"FAILD","code":"10001","msg":"标记失败"}
      */
     public function leaveEarlyAction() {
+        if(!$this->_params['enroll_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        if(!$this->_params['status']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_STATUS_NOT_EMPTY));
+        }
+        $enrollModel = new Enroll();
+        $where['id'] = $this->_params['enroll_id'];
+        $eInfo = $enrollModel->findOne($where);
+        if(!$eInfo) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        $updateInfo['leaveEarly'] = $this->_params['status'] == 100 ? 200 : 100;
+        $urs = $eInfo->save($updateInfo);
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS));
 
     }
 

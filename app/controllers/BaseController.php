@@ -14,10 +14,11 @@ class BaseController extends Controller {
         if ($this->request->isPost() == true) {
             $this->_params = $this->request->getPost() ? $this->request->getPost() : $this->request->getJsonRawBody(true);
         } elseif($this->request->isGet() == true) {
-            $this->_params = $this->request->isGet();
+            $this->_params = $this->request->get();
         } else {
             $this->_params =  $this->request->getJsonRawBody(true);
         }
+
     }
 
     public function responseJson($status, $message = array(), $data = array()) {

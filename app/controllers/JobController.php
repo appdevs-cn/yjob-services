@@ -1,6 +1,9 @@
 <?php
 namespace Controllers;
 
+use Models\Enroll;
+use Models\Evaluate;
+use Models\Work;
 use Phalcon\Mvc\Controller;
 
 use Utilities\Common\Lang;
@@ -9,10 +12,17 @@ use Models\Job;
 
 use Models\JobInfo;
 
+use Models\JobAutoRefresh;
+
+use Models\JobFav;
+
+use Models\Enrol;
+
 use Phalcon\Mvc\Model\Resultset\Simple as Resultset;
 
 class JobController extends BaseController {
 
+    private $evaluateType = [101, 102, 103, 104, 105];
     /**
      * @apiDefine Token
      * @apiHeader {Number} APP_ID  API为应用分配的唯一ID
@@ -90,68 +100,6 @@ class JobController extends BaseController {
      * @apiParam (点位信息字段) {Number} fall_in_time 集合时间.
      * @apiParam (点位信息字段) {String} fall_in_address 集合地点.
      * @apiUse Response
-     * @apiExample {curl} 请求实例:
-     * {
-     * "job_name":"test\u804c\u4f4d\u6dfb\u52a0",
-     * "job_desc":"\u804c\u4f4d\u63cf\u8ff0\u4e0d\u80fd\u4e3a\u7a7a",
-     * "company_id":"10001",
-     * "company_name":"\u4e91\u54c1\u79d1\u6280",
-     * "job_type":100,
-     * "start_time":1478292103,"end_time":1578292103,
-     * "category_id":"1111",
-     * "category_name":"\u4f20\u5355\u6d3e\u53d1",
-     * "position_high":"1,2,3,10",
-     * "position_character":"51,52",
-     * "experience":"23,12",
-     * "sex":100,
-     * "education":103,
-     * "min_age":10,
-     * "max_age":30,
-     * "publish_city_id":"2001",
-     * "contacts_info":
-     *       {
-     *           "contact_name":"\u8d75\u5b50\u8c6a",
-     *           "dispaly_name":100,
-     *           "contact_tel":"010-56199966",
-     *           "contact_mobile":"18101020846",
-     *           "contact_email":"zh@appdevs.cn",
-     *           "dispaly_email":200,
-     *           "contact_address":"\u5317\u4eac\u5e02\u6d77\u6dc0\u533a\u4e0a\u5730\u4e94\u8857\u7fa4\u82f1\u79d1\u6280\u56ed"
-     *      },
-     * "receive_info":
-     *      {
-     *          "receive_email":"hr@appdevs.cn",
-     *          "push_email":200,
-     *          "receive_mobile":"131266712321",
-     *          "push_sms":100
-     *      },
-     * "stations_info":
-     *     [{
-     *          "supervisor_nums":20,
-     *          "supervisor_backup":5,
-     *          "supervisor_money":200,
-     *          "supervisor_wage":15,
-     *          "supervisor_type":103,
-     *          "parttime_nums":50,
-     *          "parttime_backup":30,
-     *          "parttime_money":150,
-     *          "parttime_wage":108,
-     *          "parttime_type":201,
-     *          "province_id":1008,
-     *          "city_id":3213,
-     *          "district_id":202,
-     *          "business_district_id":298
-     *          "address":"\u5317\u4eac\u5e02\u4e2d\u5173\u6751\u9f0e\u597d\u5927\u53a6",
-     *          "lng":109.321221,
-     *          "lat":89.212321,
-     *          "start_date":1479898902,
-     *          "end_date":1579898902,
-     *          "work_start_time":"090000",
-     *          "work_end_time":180000,
-     *          "fall_in_time":140000,
-     *          "fall_in_address":"\u4eba\u6c11\u5927\u5b66\u98df\u5802"
-     *     }]
-     * }
      * @apiSuccessExample {json} 成功返回样例:
      * {"status":"Success","code":"0","msg":"发布成功"}
      * @apiUse Response
@@ -395,10 +343,10 @@ class JobController extends BaseController {
      * @apiParam  {Number[]} del_job_ids 删除的点位ID.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"更新成功"}
+     * {"status":"SUCCESS","code":"0","msg":"更新成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"职位描述不能为空"}
+     * {"status":"FAILD","code":"10001","msg":"职位描述不能为空"}
      */
     public function updateAction() {
         $jobId = $this->_params['jobid'];
@@ -434,13 +382,13 @@ class JobController extends BaseController {
         $jobData['push_sms'] = $this->_params['receive_info']['push_sms'] ? $this->_params['receive_info']['push_sms'] : 100;
         $jobData['update_time'] = time();
         if(!$jobInfo->save($jobData)) {
-            return $this->responseJson("Faild",Lang::_M(JOB_INFO_UPDATE_FAILD));
+            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_UPDATE_FAILD));
         }
         if($this->_params['stations_info']) {
             foreach($this->_params['stations_info'] as $sk => $sv) {
                 $Jinfo = JobInfo::findFirst($sv['job_info_id']);
                 if(!$Jinfo->save($sv)) {
-                    return $this->responseJson("Faild",Lang::_M(JOB_INFO_UPDATE_FAILD));
+                    return $this->responseJson("FAILD",Lang::_M(JOB_INFO_UPDATE_FAILD));
                 }
             }
         }
@@ -449,7 +397,7 @@ class JobController extends BaseController {
                 $Jinfo = JobInfo::findFirst($sv['job_info_id']);
                 $Jinfo->is_delete = 200;
                 if(!$Jinfo->save()) {
-                    return $this->responseJson("Faild",Lang::_M(JOB_INFO_UPDATE_FAILD));
+                    return $this->responseJson("FAILD",Lang::_M(JOB_INFO_UPDATE_FAILD));
                 }
             }
         }
@@ -458,7 +406,7 @@ class JobController extends BaseController {
 
     /**
      * @apiVersion 1.0.0
-     * @api {get} /job/list  职位列表
+     * @api {post} /job/list  职位列表
      * @apiUse Token
      * @apiName list
      * @apiGroup Jobs
@@ -471,11 +419,105 @@ class JobController extends BaseController {
      * @apiParam {Number} size 每页返回数量.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"Success","code":"0","msg":"获取列表成功","data":{
-    "codes": 0,
-    "msg": "获取职位列表成功!",
-    "status": "Success",
-    "data": [
+     * {"status":"Success","code":"0","msg":"获取列表成功","data": [
+    {
+    "id": "22",
+    "company_id": "10001",
+    "company_name": "云品科技",
+    "job_name": "test职位添加",
+    "job_type": "100",
+    "category_id": "1111",
+    "category_name": "传单派发",
+    "position_high": "1,2,3,10",
+    "position_character": "51,52",
+    "sex": "100",
+    "education": "103",
+    "experience": "23,12",
+    "min_age": "10",
+    "max_age": "30",
+    "job_desc": "职位描述不能为空",
+    "publish_city_id": "2001",
+    "contact_name": "赵子豪",
+    "dispaly_name": "100",
+    "contact_tel": "010-56199966",
+    "contact_mobile": "18101020846",
+    "dispaly_mobile": "100",
+    "contact_email": "zh@appdevs.cn",
+    "dispaly_email": "200",
+    "contact_address": "北京市海淀区上地五街群英科技园",
+    "receive_email": "hr@appdevs.cn",
+    "push_email": "200",
+    "receive_mobile": "13126671232",
+    "push_sms": "100",
+    "status": "301",
+    "refurbish_time": "1472043323",
+    "create_time": "1471787542",
+    "update_time": "1472090698",
+    "list": [
+    {
+    "id": "5",
+    "job_id": "22",
+    "supervisor_nums": "20",
+    "supervisor_backup": "5",
+    "supervisor_money": "200.00",
+    "supervisor_wage": "15",
+    "supervisor_type": "103",
+    "parttime_nums": "50",
+    "parttime_backup": "30",
+    "parttime_money": "150.00",
+    "parttime_wage": "108",
+    "parttime_type": "201",
+    "province_id": "1008",
+    "city_id": "3213",
+    "district_id": "202",
+    "business_district_id": "298",
+    "address": "北京市中关村鼎好大厦",
+    "lng": "126.416094",
+    "lat": "41.945409",
+    "start_date": "1479898902",
+    "end_date": "1579898902",
+    "sign_nums": "0",
+    "work_start_time": "90000",
+    "work_end_time": "180000",
+    "fall_in_time": "140000",
+    "fall_in_address": "人民大学食堂",
+    "is_delete": "100",
+    "job_type": "200",
+    "category_id": "1111"
+    },
+    {
+    "id": "6",
+    "job_id": "23",
+    "supervisor_nums": "20",
+    "supervisor_backup": "5",
+    "supervisor_money": "200.00",
+    "supervisor_wage": "15",
+    "supervisor_type": "103",
+    "parttime_nums": "50",
+    "parttime_backup": "30",
+    "parttime_money": "150.00",
+    "parttime_wage": "108",
+    "parttime_type": "201",
+    "province_id": "1008",
+    "city_id": "3213",
+    "district_id": "202",
+    "business_district_id": "298",
+    "address": "北京市中关村鼎好大厦",
+    "lng": "117.571438",
+    "lat": "31.316441",
+    "start_date": "1479898902",
+    "end_date": "1579898902",
+    "sign_nums": "0",
+    "work_start_time": "90000",
+    "work_end_time": "190000",
+    "fall_in_time": "140000",
+    "fall_in_address": "人民大学食堂",
+    "is_delete": "100",
+    "job_type": "200",
+    "category_id": "1111"
+    }
+    ]
+    },
     {
     "id": "23",
     "company_id": "10001",
@@ -505,10 +547,10 @@ class JobController extends BaseController {
     "push_email": "200",
     "receive_mobile": "13126671232",
     "push_sms": "100",
-    "status": "200",
+    "status": "301",
     "refurbish_time": "1471790501",
     "create_time": "1471790501",
-    "update_time": "1471790501",
+    "update_time": "1472090698",
     "list": [
     {
     "id": "5",
@@ -578,7 +620,7 @@ class JobController extends BaseController {
     }
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"Faild","code":"10001","msg":"职位列表为空"}
+     * {"status":"FAILD","code":"10001","msg":"职位列表为空"}
      */
     public function listAction() {
         if($this->_params['company_id']) {
@@ -605,7 +647,7 @@ class JobController extends BaseController {
             "order" => "refurbish_time DESC",
         ])->toArray() ;
         if(!$Jobs) {
-            return $this->responseJson("Faild",Lang::_M(JOB_LIST_EMPTY));
+            return $this->responseJson("FAILD",Lang::_M(JOB_LIST_EMPTY));
         }
         foreach($Jobs as $Jk => $Jv) {
             $Jobs[$Jk]['list'] = JobInfo::find(['job_id' => $Jv['id']])->toArray();
@@ -623,18 +665,95 @@ class JobController extends BaseController {
      * @apiParam {Number} job_id 职位ID.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"获取职位详情成功","data":""}
+     * {"status":"SUCCESS","code":"0","msg":"获取职位详情成功","data":{
+        "id": "22",
+        "company_id": "10001",
+        "company_name": "云品科技",
+        "job_name": "test职位添加",
+        "job_type": "100",
+        "category_id": "1111",
+        "category_name": "传单派发",
+        "position_high": "1,2,3,10",
+        "position_character": "51,52",
+        "sex": "100",
+        "education": "103",
+        "experience": "23,12",
+        "min_age": "10",
+        "max_age": "30",
+        "job_desc": "职位描述不能为空",
+        "publish_city_id": "2001",
+        "contact_name": "赵子豪",
+        "dispaly_name": "100",
+        "contact_tel": "010-56199966",
+        "contact_mobile": "18101020846",
+        "dispaly_mobile": "100",
+        "contact_email": "zh@appdevs.cn",
+        "dispaly_email": "200",
+        "contact_address": "北京市海淀区上地五街群英科技园",
+        "receive_email": "hr@appdevs.cn",
+        "push_email": "200",
+        "receive_mobile": "13126671232",
+        "push_sms": "100",
+        "status": "301",
+        "refurbish_time": "1472043323",
+        "create_time": "1471787542",
+        "update_time": "1472090698",
+        "list": [
+        {
+        "id": "5",
+        "job_id": "22",
+        "supervisor_nums": "20",
+        "supervisor_backup": "5",
+        "supervisor_money": "200.00",
+        "supervisor_wage": "15",
+        "supervisor_type": "103",
+        "parttime_nums": "50",
+        "parttime_backup": "30",
+        "parttime_money": "150.00",
+        "parttime_wage": "108",
+        "parttime_type": "201",
+        "province_id": "1008",
+        "city_id": "3213",
+        "district_id": "202",
+        "business_district_id": "298",
+        "address": "北京市中关村鼎好大厦",
+        "lng": "126.416094",
+        "lat": "41.945409",
+        "start_date": "1479898902",
+        "end_date": "1579898902",
+        "sign_nums": "0",
+        "work_start_time": "90000",
+        "work_end_time": "180000",
+        "fall_in_time": "140000",
+        "fall_in_address": "人民大学食堂",
+        "is_delete": "100",
+        "job_type": "200",
+        "category_id": "1111"
+        }
+        ]
+    }}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"没有该职位的信息"}
+     * {"status":"FAILD","code":"10001","msg":"没有该职位的信息"}
      */
-    public function infoAction() {
-
+    public function infoAction($job_id) {
+        if(!$job_id) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobModel = new Job();
+        $info = $jobModel->findFirst($job_id)->toArray();
+        if(!$info) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_NO_EXISE));
+        }
+        $jobInfoModel = new JobInfo();
+        $joblist = $jobInfoModel->find('job_id='.$job_id)->toArray();
+        $info['list'] = $joblist ? $joblist : array();
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_GET_LIST_SUCCESS), $info);
     }
 
     /**
      * @apiVersion 1.0.0
-     * @api {get} /job/search   职位搜索
+     * @api {post} /job/search   职位搜索
      * @apiUse Token
      * @apiName search
      * @apiGroup Jobs
@@ -652,12 +771,8 @@ class JobController extends BaseController {
      * @apiParam {Number} size 每页返回数量.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"Success","code":"0","msg":"获取列表成功","data":"{
-  "codes": 0,
-    "msg": "获取职位列表成功!",
-    "status": "Success",
-    "data": [
-    {
+     * {"status":"Success","code":"0","msg":"获取列表成功", "data": {
+    "0": {
     "list": [
     {
     "id": "5",
@@ -721,13 +836,13 @@ class JobController extends BaseController {
     "push_email": "200",
     "receive_mobile": "13126671232",
     "push_sms": "100",
-    "status": "100",
-    "refurbish_time": "1471787542",
+    "status": "301",
+    "refurbish_time": "1472043323",
     "create_time": "1471787542",
-    "update_time": "1471794751"
+    "update_time": "1472090698"
     }
     },
-    {
+    "1": {
     "list": [
     {
     "id": "6",
@@ -791,17 +906,17 @@ class JobController extends BaseController {
     "push_email": "200",
     "receive_mobile": "13126671232",
     "push_sms": "100",
-    "status": "200",
+    "status": "301",
     "refurbish_time": "1471790501",
     "create_time": "1471790501",
-    "update_time": "1471790501"
+    "update_time": "1472090698"
     }
-    }
-    ]
-    }"}
+    },
+    "totalCount": "2"
+    }}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"Faild","code":"10001","msg":"职位列表为空"}
+     * {"status":"FAILD","code":"10001","msg":"职位列表为空"}
      */
     public function searchAction() {
 
@@ -849,17 +964,21 @@ class JobController extends BaseController {
         $conditons[] = 'is_delete = 100';
         $sql .= " where ".implode(' AND ',$conditons);
         $sql .= ' order by '.$sort.' limit '.$start.','.$size;
+        $countSql = "select count(1) as totalCount from ys_jobs_info where ".implode(' AND ', $conditons) ;
 
         $jobInfoObject = new JobInfo();
         $InfoTmp =  new Resultset(null, $jobInfoObject, $jobInfoObject->getReadConnection()->query($sql));
+        $count = new Resultset(null, $jobInfoObject, $jobInfoObject->getReadConnection()->query($countSql));
+        $totalTmp = $count->toArray();
         $Jobs = $InfoTmp->toArray();
         if(!$Jobs) {
-            return $this->responseJson("Faild",Lang::_M(JOB_LIST_EMPTY));
+            return $this->responseJson("FAILD",Lang::_M(JOB_LIST_EMPTY));
         }
         foreach($Jobs as $Jk => $Jv) {
             $ids[] = $Jv['job_id'];
             $JobList[$Jv['job_id']]['list'][] = $Jv;
         }
+
         $idstr = implode(',', $ids);
         $Jsql = "select * from ys_jobs where id IN($idstr)";
         $JobObject = new Job();
@@ -872,8 +991,9 @@ class JobController extends BaseController {
                 }
             }
         }
-
-        return $this->responseJson("Success",Lang::_M(JOB_LIST_SUCCESS), array_values($JobList));
+        $return = array_values($JobList);
+        $return['totalCount'] = $totalTmp[0]['totalCount'];
+        return $this->responseJson("Success",Lang::_M(JOB_LIST_SUCCESS), $return);
     }
 
     /**
@@ -884,16 +1004,30 @@ class JobController extends BaseController {
      * @apiGroup Jobs
      * @apiDescription 删除职位.
      * @apiParam {Number[]} job_ids 职位ID.
-     * @apiParam {Number} uid 用户ID.
-     * @apiParam {Number} company_id 企业ID.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"删除成功"}
+     * {"status":"SUCCESS","code":"0","msg":"审核成功","data":{
+        "22": 100,
+        "23": 100
+        }
+     * }
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"删除失败"}
+     * {"status":"FAILD","code":"10001","msg":"删除失败"}
      */
     public function deleteAction() {
+        if(!$this->_params['job_ids'] || !is_array($this->_params['job_ids'])) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobModel = new Job();
+        foreach($this->_params['job_ids'] as $jk => $jid) {
+            $jobInfo = $jobModel->findfirst($jid);
+            $uData['status'] = 400;
+            $uData['update_time'] = time();
+            $urst = $jobInfo->save($uData);
+            $returnData[$jid] = $urst ? 100 : 220;
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_DELETE_SUCCESS), $returnData);
 
     }
 
@@ -905,17 +1039,25 @@ class JobController extends BaseController {
      * @apiGroup Jobs
      * @apiDescription 刷新职位.
      * @apiParam {Number[]} job_id 职位ID.
-     * @apiParam {Number} uid 用户ID.
-     * @apiParam {Number} company_id 企业ID.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"刷新成功"}
+     * {"status":"SUCCESS","code":"0","msg":"刷新成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"刷新失败"}
+     * {"status":"FAILD","code":"10001","msg":"刷新失败"}
      */
     public function refreshAction() {
-
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobModel = new Job();
+        $jobInfo = $jobModel->findfirst($this->_params['job_id']);
+        $uData['refurbish_time'] = time();
+        $uData['update_time'] = time();
+        if(!$jobInfo->save($uData)) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_REFRESH_FAILD));
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_REFRESH_SUCCESS));
     }
 
     /**
@@ -925,19 +1067,35 @@ class JobController extends BaseController {
      * @apiName audit
      * @apiGroup Jobs
      * @apiDescription 职位审核.
-     * @apiParam {Number[]} job_id 职位ID.
-     * @apiParam {Number} uid 用户ID.
-     * @apiParam {Number} company_id 企业ID.
+     * @apiParam {Number[]} job_ids 职位ID.
      * @apiParam {Number=100,200} status=100 审核状态(100=>通过,200=>拒绝)
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"审核成功"}
+     * {"status":"SUCCESS","code":"0","msg":"审核成功","data":{
+    "22": 100,
+    "23": 100
+    }
+    }
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"审核失败"}
+     * {"status":"FAILD","code":"10001","msg":"审核失败"}
      */
     public function auditAction() {
-
+        if(!$this->_params['job_ids'] || !is_array($this->_params['job_ids'])) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobModel = new Job();
+        foreach($this->_params['job_ids'] as $jk => $jid) {
+            $jobInfo = $jobModel->findfirst($jid);
+            if($jobInfo->status != 200) {
+                $this->responseJson("FAILD",Lang::_M(JOB_AUDIT_STATUS_ERROR));
+            }
+            $uData['status'] = $this->_params['status'] == 100 ? 100 : 301;
+            $uData['update_time'] = time();
+            $urst = $jobInfo->save($uData);
+            $returnData[$jid] = $urst ? 100 : 220;
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_AUDIT_SUCCESS), $returnData);
     }
 
     /**
@@ -948,18 +1106,27 @@ class JobController extends BaseController {
      * @apiGroup Jobs
      * @apiDescription 关闭职位.
      ** @apiParam {Number[]} job_id 职位ID.
-     * @apiParam {Number} uid 用户ID.
-     * @apiParam {Number} company_id 企业ID.
      * @apiParam {Number=100,200} status=100 审核状态(100=>关闭,200=>恢复)
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"关闭成功"}
+     * {"status":"SUCCESS","code":"0","msg":"关闭成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"关闭失败"}
+     * {"status":"FAILD","code":"10001","msg":"关闭失败"}
     */
     public function closeAction() {
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobModel = new Job();
+        $jobInfo = $jobModel->findfirst($this->_params['job_id']);
 
+        $uData['status'] = $this->_params['status'] == 100 ? 302 : 100;
+        $uData['update_time'] = time();
+        if(!$jobInfo->save($uData)) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_CLOSE_FAILD));
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_CLOSE_SUCCESS));
     }
 
     /**
@@ -970,17 +1137,34 @@ class JobController extends BaseController {
      * @apiGroup Jobs
      * @apiDescription 自动刷新设置.
      * @apiParam {Number} job_id 职位ID.
-     * @apiParam {Number} uid 用户ID.
      * @apiParam {Number=100,200} status=100 自动刷新(100=>打开,200=>关闭)
      * @apiParam {Number} refresh_time 自动刷新时间(仅开启时使用).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"自动刷新设置成功"}
+     * {"status":"SUCCESS","code":"0","msg":"自动刷新设置成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"自动刷新设置失败"}
+     * {"status":"FAILD","code":"10001","msg":"自动刷新设置失败"}
      */
     public function autoRefreshAction() {
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        if($this->_params['status'] == 100 && !isset($this->_params['refresh_time'])) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_AUTO_INFO_FAILD));
+        }
+        $cData['job_id'] = $this->_params['job_id'];
+        $cData['refresh_status'] = $this->_params['status'] ? $this->_params['status'] : 0;
+        $cData['refresh_time'] = $this->_params['refresh_time'] ? $this->_params['refresh_time'] : 0;
+        $cData['create_time'] = time();
+        $autoRefreshModel = new JobAutoRefresh();
+        $jobInfo = $autoRefreshModel->findOne('job_id='.$this->_params['job_id']);
+        $objectName = !$jobInfo ? $autoRefreshModel : $jobInfo ;
+        if(!$objectName->save($cData)) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_AUTO_SETTING_FAILD));
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_AUTO_SETTING_SUCCESS));
+
 
     }
 
@@ -996,18 +1180,84 @@ class JobController extends BaseController {
      * @apiParam {Number} job_id 职位ID.
      * @apiParam {Number} job_info_id 点位ID.
      * @apiParam {String} sign_address 签到地址.
-     * @apiParam {Number} sign_pic 签到图片.
+     * @apiParam {Number} sign_time 签到时间.
+     * @apiParam {Json} sign_pic 签到图片.
      * @apiParam {String} remark 签到备注.
-     * @apiParam {Number=100,200} status=100 签到/签退(100=>签到,200=>签退)
+     * @apiParam {Number=100,200} type=100 签到/签退(100=>签到,200=>签退)
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"签到成功"}
+     * {"status":"SUCCESS","code":"0","msg":"签到成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"签到失败"}
+     * {"status":"FAILD","code":"10001","msg":"签到失败"}
      */
     public function pastAction() {
+        if(!$this->_params['uid']) {
+            return $this->responseJson("FAILD",Lang::_M(USER_ID_NO_EMPTY));
 
+        }
+        if(!$this->_params['enroll_id']) {
+            return $this->responseJson("FAILD",Lang::_M(ENROLL_ID_NO_EMPTY));
+        }
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        if(!$this->_params['job_info_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_IDS_NO_EMPTY));
+        }
+        if(!$this->_params['sign_address']) {
+            return $this->responseJson("FAILD",Lang::_M(SIGN_ADDR_NO_EMPTY));
+
+        }
+        if(!$this->_params['sign_pic'] || count($this->_params['sign_pic'] ) > 3) {
+            return $this->responseJson("FAILD",Lang::_M(SIGN_PIC_NO_EMPTY));
+        }
+        $enRollModel = new Enroll();
+        $ewhere = 'id='.$this->_params['enroll_id'];
+        $rInfo = $enRollModel->findOne($ewhere)->toArray();
+        if(!$rInfo['id']) {
+            $this->responseJson("FAILD",Lang::_M(ENROLL_INFO_NO_EXSIST));
+        }
+        $enRollModel = $enRollModel->toArray();
+        $signInfo['work_date'] = $rInfo['work_date'];
+        $workModel = new Work();
+        $where['enroll_id'] = $this->_params['enroll_id'];
+        if($this->_params['sing_type'] == 200) {
+            $where['sign_type'] = 100;
+            $workInfo = $workModel->findOne($where)->toArray();
+            if(!$workInfo) {
+                return $this->responseJson("FAILD",Lang::_M(SIGN_TYPE_FAILD));
+            }
+        }
+        $where['work_date'] = $rInfo['work_date'];
+        $where['sign_type'] = $this->_params['sign_type'];
+        $workInfo = $workModel->findOne($where);
+        if($workInfo) {
+            $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
+            $signInfo['sign_pic'] = $this->_params['sign_pic'];
+            $signInfo['sign_address'] = $this->_params['sign_address'];
+            $signInfo['remark'] = $this->_params['remark'];
+            $signInfo['work_date'] = $enRollModel['work_date'];
+            $rs = $workInfo->save($signInfo);
+        } else {
+            $signInfo['sign_type'] = $this->_params['sign_type'] ? $this->_params['sign_type'] : 100;
+            $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
+            $signInfo['sign_pic'] = $this->_params['sign_pic'];
+            $signInfo['sign_address'] = $this->_params['sign_address'];
+            $signInfo['uid'] = $this->_params['uid'];
+            $signInfo['enroll_id'] = $this->_params['enroll_id'];
+            $signInfo['job_id'] = $this->_params['job_id'];
+            $signInfo['job_info_id'] = $this->_params['job_info_id'];
+            $signInfo['remark'] = $this->_params['remark'];
+            $signInfo['work_date'] = $rInfo['work_date'];
+            $rs = $workModel->save($signInfo);
+        }
+        if(!$rs) {
+            $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_FAILD' : 'SIGN_OUT_FAILD';
+            return $this->responseJson("FAILD",Lang::_M($T));
+        }
+        $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_SUCCESS' : 'SIGN_OUT_SUCCESS';
+        return $this->responseJson("SUCCESS",Lang::_M($T));
     }
 
     /**
@@ -1026,13 +1276,63 @@ class JobController extends BaseController {
      * @apiParam {Number} size 每页返回数量.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"确认成功","data":""}
+     * {"status":"SUCCESS","code":"0","msg":"确认成功","data":{
+    "totalCount": "1",
+        "list": [
+            {
+            "id": "7",
+            "uid": "10002",
+            "enroll_id": "1",
+            "job_id": "22",
+            "job_info_id": "5",
+            "sign_type": "100",
+            "sign_address": "银网中心A",
+            "sign_time": "1472304304",
+            "sign_pic": "[\"http:\\/\\/www.baidu.com\\/a.jpg\",\"http:\\/\\/baidu.com\\/b.jpg\"]",
+            "remark": "淫网中心A 1",
+            "work_date": "20160827",
+            "confirm_status": "100",
+            "confirm_uid": "0",
+            "confirm_time": "0",
+            "confirm_user_name": "",
+            "confirm_user_position": "0"
+            }
+        ]
+    }}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"确认失败"}
+     * {"status":"FAILD","code":"10001","msg":"确认失败"}
      */
     public function pastListAction() {
-
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        if(!$this->_params['job_info_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_IDS_NO_EMPTY));
+        }
+        $page = $this->_params['page'] ? $this->_params['page'] : 1;
+        $size = $this->_params['size'] ? $this->_params['size'] : 30;
+        $start = ($page - 1) * $size;
+        $date =  $this->_params['date'] ? $this->_params['date'] : '';
+        if($this->_params['show_type'] == 200) {
+            $where['$ne'] = array('sign_pic' => null);
+        }
+        $this->_params['type'] && $where['type'] = $this->_params['type'];
+        $where['job_id'] = $this->_params['job_id'];
+        $where['work_date'] = $this->_params['date'];
+        $where['job_info_id'] = $this->_params['job_info_id'];
+        $workModel = new Work();
+        $count = $workModel->getCount($where);
+        $signList = $workModel->findAll($where,$start, $size)->toArray();
+        if($count == 0) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_IDS_NO_EMPTY));
+        }
+        foreach($signList as $sk => &$sv) {
+            $sv['sign_pic'] = json_decode($sv['sign_pic'], true);
+        }
+        $return['totalCount'] = $count;
+        $return['list'] = $signList;
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_LIST_SUCCESS), $return);
     }
 
 
@@ -1045,18 +1345,55 @@ class JobController extends BaseController {
      * @apiGroup Jobs
      * @apiDescription 签到/签退/续约确认.
      * @apiParam {Number[]} sign_ids 签到/签退id.
-     * @apiParam {Number} type 操作类型(100=>签到,200=>签退).
+     * @apiParam {Number} confirm_uid 确认人UID.
+     * @apiParam {Number} confirm_user_name 确认人名称.
+     * @apiParam {Number} confirm_user_position 确认人职位(100=>督导,200=>BD).
      * @apiParam {Number} status 状态(100=>通过,200=>拒绝).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"确认成功"}
+     * {"status":"SUCCESS","code":"0","msg":"确认成功", "data":{
+    "7": 1,
+    "8": 0
+        }
+     * }
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"确认失败"}
+     * {"status":"FAILD","code":"10001","msg":"确认失败"}
     */
 
     public function confirmAction() {
-
+        if(!$this->_params['sign_ids']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_SIGN_IDS_NO_EMPTY));
+        }
+        if(!$this->_params['status']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_SIGN_STATUS_NO_EMPTY));
+        }
+        if(!$this->_params['confirm_uid']) {
+            return $this->responseJson("FAILD",Lang::_M(SIGN_CONFIRM_UID_NO_EMPTY));
+        }
+        if(!$this->_params['confirm_user_name']) {
+            return $this->responseJson("FAILD",Lang::_M(SIGN_CONFIRM_NAME_NO_EMPTY));
+        }
+        if(!$this->_params['confirm_user_position']) {
+            return $this->responseJson("FAILD",Lang::_M(SIGN_CONFIRM_POSITION_NO_EMPTY));
+        }
+        $work = new Work();
+        foreach($this->_params['sign_ids'] as $sidk => $sid) {
+            $where['id'] = $sid;
+            echo $sid;
+            $sInfo = $work->findOne($where);
+            if($sInfo) {
+                $updateInfo['confirm_status'] = $this->_params['status'];
+                $updateInfo['confirm_uid'] = $this->_params['confirm_uid'];
+                $updateInfo['confirm_user_name'] = $this->_params['confirm_user_name'];
+                $updateInfo['confirm_user_position'] = $this->_params['confirm_user_position'];
+                $updateInfo['confirm_uid'] = time();
+                $data[$sid] = $sInfo->save($updateInfo) ? 1 : 0;
+            } else {
+                $data[$sid] = 0;
+            }
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(SIGN_CONFIRM_STATUS_SUCCESS), $data);
     }
 
     /**
@@ -1070,12 +1407,37 @@ class JobController extends BaseController {
      * @apiParam {Number} job_id 职位ID.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"收藏成功"}
+     * {"status":"SUCCESS","code":"0","msg":"收藏成功"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"收藏失败"}
+     * {"status":"FAILD","code":"10001","msg":"收藏失败"}
      */
     public function favJobAction() {
+        if(!$this->_params['uid']) {
+            return $this->responseJson("FAILD",Lang::_M(USER_ID_NO_EMPTY));
+        }
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobModel = new Job();
+        $jobInfo = $jobModel->findFirst($this->_params['job_id']);
+        if(count($jobInfo) != 1) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_NO_EXISE));
+        }
+        $favInfo['uid'] = $this->_params['uid'];
+        $favInfo['job_id'] = $this->_params['job_id'];
+        $favInfo['job_name'] = $jobInfo->job_name;
+        $favInfo['create_time'] = time();
+        $favModel = new JobFav();
+        $count = $favModel->getCount(array('uid'=>$favInfo['uid'], 'job_id'=>$favInfo['job_id']), 'ys_jobs_fav');
+        if($count > 0) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_FAV_NO_REPEAT));
+        }
+        $frst = $favModel->save($favInfo);
+        if(!$frst) {
+            return $this->responseJson("SUCCESS",Lang::_M(JOB_FAV_FAILD));
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_FAV_SUCCESS));
 
     }
 
@@ -1091,12 +1453,42 @@ class JobController extends BaseController {
      * @apiParam {Number} size 每页返回数量.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"获取职位收藏列表成功","data":""}
+     * {"status":"SUCCESS","code":"0","msg":"获取职位收藏列表成功","data":{
+    "totalCount": "1",
+    "list": [
+        {
+        "id": "4",
+        "uid": "10002",
+        "job_id": "22",
+        "job_name": "test职位添加",
+        "create_time": "2016-08-27"
+        }
+        ]
+    }
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"获取职位收藏列表失败"}
+     * {"status":"FAILD","code":"10001","msg":"获取职位收藏列表失败"}
      */
-    public function favJobListAction() {
+    public function favJobListAction($uid) {
+        if(!$uid) {
+            return $this->responseJson("FAILD",Lang::_M(USER_ID_NO_EMPTY));
+        }
+        $page = $this->_params['page'] ? $this->_params['page']: 1;
+        $size = $this->_params['size'] ? $this->_params['size']: 30;
+        $start = ($page - 1) * $size;
+        $favModel = new JobFav();
+        $where = 'uid='.$uid;
+        $favList = $favModel->findAll($where, $start, $size, 'create_time DESC')->toArray();
+        $totalCount = $favModel->getCount($where);
+        $return['totalCount'] = $totalCount;
+        foreach($favList as $fk => &$info) {
+            $info['create_time'] = date('Y-m-d', $info['create_time']);
+        }
+        $return['list'] = $favList;
+        if(!$favList) {
+            return $this->responseJson("SUCCESS",Lang::_M(JOB_FAV_LIST_EMPTY));
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_GET_FAV_LIST_SUCCESS), $return);
 
     }
 
@@ -1109,19 +1501,64 @@ class JobController extends BaseController {
      * @apiGroup Jobs
      * @apiDescription 工作评价.
      * @apiParam {Number} enroll_id 报名ID.
+     * @apiParam {Number} uid 被评价用户ID.
      * @apiParam {Number} evaluate_uid 评价人的ID(督导、BD).
      * @apiParam {Number} type 评价类型(101=>准时率,102=>热心值,103=>效果值,104=>绩效值,105=>能力值).
      * @apiParam {Float}  score 分数值
      * @apiParam {String}  evaluate_content 评价内容
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"评价成功!"}
+     * {"status":"SUCCESS","code":"0","msg":"评价成功!"}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"评价失败!"}
+     * {"status":"FAILD","code":"10001","msg":"评价失败!"}
      */
-    public function evaluateAction() {
-
+    public function evaluateAction()
+    {
+        if (!$this->_params['enroll_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_ID_NO_EMPTY));
+        }
+        if ($this->_params['type'] && !in_array($this->_params['type'], $this->evaluateType)) {
+            return $this->responseJson("FAILD", Lang::_M(EVALUATE_TYPE_FAILD));
+        }
+        if ($this->_params['type'] && !$this->_params['score']) {
+            return $this->responseJson("FAILD", Lang::_M(EVALUATE_SOURCE_FAILD));
+        }
+        switch ($this->_params['type']) {
+            case 101 :
+                $fieldName = 'punctual';
+                break;
+            case 102 :
+                $fieldName = 'earnest';
+                break;
+            case 103 :
+                $fieldName = 'effect';
+                break;
+            case 104 :
+                $fieldName = 'performance';
+                break;
+            case 105 :
+                $fieldName = 'ability';
+                break;
+        }
+        $evaluateModel = new Evaluate();
+        $enrollEvalueateInfo = $evaluateModel->findOne(array('enroll_id' => $this->_params['enroll_id']));
+        $this->_params['score'] && $eInfo[$fieldName] = $this->_params['score'];
+        $eInfo['uid'] = $this->_params['uid'];
+        $eInfo['enroll_id'] = $this->_params['enroll_id'];
+        $eInfo['evaluate_uid'] = $this->_params['evaluate_uid'];
+        $this->_params['evaluate_content'] && $eInfo['evaluate_content'] = $this->_params['evaluate_content'];
+        $eInfo['evaluate_time'] = time();
+        if ($enrollEvalueateInfo) {
+            $rs = $enrollEvalueateInfo->save($eInfo);
+        } else {
+            $eInfo['create_time'] = time();
+            $rs = $evaluateModel->save($eInfo);
+        }
+        if (!$rs) {
+            return $this->responseJson("FAILD", Lang::_M(EVALUATE_USER_FAILD));
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(EVALUATE_USER_SUCCESS));
     }
 
     /**
@@ -1134,57 +1571,35 @@ class JobController extends BaseController {
      * @apiParam {Number} enroll_id 报名ID.
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"获取评价详情成功!"}
-     * @apiUse Response
-     * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"获取评价详情失败!"}
-     */
-    public function evaluateInfoAction() {
-
+     * {"status":"SUCCESS","code":"0","msg":"获取评价详情成功!","data":{
+    "id": "1",
+    "uid": "10001",
+    "enroll_id": "1",
+    "evaluate_uid": "9999",
+    "evaluate_time": "1472314297",
+    "evaluate_content": "这小伙儿不错!!",
+    "punctual": "4",
+    "earnest": "1",
+    "effect": "0",
+    "performance": "0",
+    "ability": "0",
+    "create_time": "1472313835"
     }
-
-    /**
-     * @apiVersion 1.0.0
-     * @api {post} /job/renew   用户续约
-     * @apiUse Token
-     * @apiName renew
-     * @apiGroup Jobs
-     * @apiDescription 用户续约.
-     * @apiParam {Number} uid 用户ID.
-     * @apiParam {Number} job_id 职位ID.
-     * @apiParam {Number} job_info_id 点位ID.
-     * @apiUse Response
-     * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"续约成功"}
-     * @apiUse Response
-     * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"续约失败"}
-     */
-    public function renewAction() {
-
     }
-
-    /**
-     * @apiVersion 1.0.0
-     * @api {post} /job/renewList   用户续约列表
-     * @apiUse Token
-     * @apiName renewList
-     * @apiGroup Jobs
-     * @apiDescription 用户续约列表.
-     * @apiParam {Number} uid 用户ID.
-     * @apiParam {Number} job_id 职位ID.
-     * @apiParam {Number} job_info_id 点位ID.
-     * @apiParam {Number} page 页码.
-     * @apiParam {Number} size 每页返回数量.
-     * @apiUse Response
-     * @apiSuccessExample {json} 成功返回样例:
-     * {"status":"100","code":"10000","msg":"获取续约列表成功!","data":""}
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
-     * {"status":"200","code":"10001","msg":"获取续约列表失败"}
+     * {"status":"FAILD","code":"10001","msg":"获取评价详情失败!"}
      */
-    public function renewListAction() {
-
+    public function evaluateInfoAction($eid) {
+        if(!$eid) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_ID_NO_EMPTY));
+        }
+        $evaluateModel = new Evaluate();
+        $enrollEvalueateInfo = $evaluateModel->findOne(array('enroll_id' => $eid));
+        if(!$enrollEvalueateInfo) {
+            return $this->responseJson("FAILD", Lang::_M(EVALUATE_GET_INFO_FAILD));
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(EVALUATE_GET_INFO_SUCCESS), $enrollEvalueateInfo->toArray());
     }
 
 }

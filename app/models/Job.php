@@ -2,8 +2,7 @@
 
 namespace Models;
 
-
-class Job extends Base
+class Job extends \Phalcon\Mvc\Model
 {
     public function initialize() {
 
