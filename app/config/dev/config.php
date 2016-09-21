@@ -11,7 +11,7 @@ $settings = array(
         'password' => '',
         'name' => 'yservice',
         'port' => 3306,
-        'log' => '/tmp/sql_debug_'.date("Y-m-d", time()),
+        'log' => '/tmp/sql_debug',
     ),
     "redis" => [
         "host" => "localhost",

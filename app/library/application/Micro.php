@@ -22,7 +22,6 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
     }
 
     public function setConfig($file) {
-        
         if (!file_exists($file)) {
                 throw new \Exception('Unable to load configuration file');
         }
@@ -90,13 +89,12 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
 
         preg_match("/^[\/]+([^\/]+)/i", $_SERVER['REQUEST_URI'], $match);
         $fileName = LANG_PATH.$di->get('config')->lang.'/'.$match[1].'.lang.php';
-
-        if (!file_exists($fileName)) {
+        if (!file_exists($fileName) && $match[1] != 'index.php') {
 
             throw new \Exception('Unable to load Lang file');
 
         }
-        $di->set('lang', new \Utilities\Common\Lang(require $fileName));
+        $match[1] != 'index.php' && $di->set('lang', new \Utilities\Common\Lang(require $fileName));
 
         $this->setDI($di);
     }
