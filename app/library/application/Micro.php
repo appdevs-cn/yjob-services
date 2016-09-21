@@ -88,7 +88,7 @@ class Micro extends \Phalcon\Mvc\Micro implements IRun {
         });
 
         preg_match("/^[\/]+([^\/]+)/i", $_SERVER['REQUEST_URI'], $match);
-        $fileName = LANG_PATH.$di->get('config')->lang.'/'.$match[1].'.lang.php';
+        $fileName = LANG_PATH.$di->get('config')->lang.'/'.ucfirst($match[1]).'.lang.php';
         if (!file_exists($fileName) && $match[1] != 'index.php') {
 
             throw new \Exception('Unable to load Lang file');
