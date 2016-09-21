@@ -6,7 +6,7 @@
 $settings = array(
     'database' => array(
         'adapter' => 'Mysql',
-        'host' => 'localhost',
+        'host' => '127.0.0.1',
         'username' => 'apidber',
         'password' => 'ad2z2azs2',
         'name' => 'apidb',
