@@ -49,7 +49,7 @@ $routes[] = [
 
 $routes[] = [
     'method' => 'post',
-    'route'  => '/job/Refresh',
+    'route'  => '/job/refresh',
     'handler' => ['Controllers\JobController', 'refreshAction']
 ];
 

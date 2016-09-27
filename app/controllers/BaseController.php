@@ -12,7 +12,11 @@ class BaseController extends Controller {
 
     public function onConstruct() {
         if ($this->request->isPost() == true) {
-            $this->_params = $this->request->getPost() ? $this->request->getPost() : $this->request->getJsonRawBody(true);
+            if($postData = $this->request->getPost()) {
+                $this->_params = json_decode($postData['jsonData'], true);
+            } else {
+                 $this->_params = $this->request->getJsonRawBody(true);
+            }
         } elseif($this->request->isGet() == true) {
             $this->_params = $this->request->get();
         } else {

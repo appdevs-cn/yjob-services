@@ -112,7 +112,6 @@ class JobController extends BaseController {
      */
 
     public function createAction() {
-
         if(!$this->_params['job_name']) {
             return $this->responseJson("FAILD",Lang::_M(JOB_NAME_NO_EMPTY));
         }
@@ -269,7 +268,11 @@ class JobController extends BaseController {
         if($job->save($jobData)) {
             $jobId = $job->id;
             $jobInfo = new JobInfo();
+            
             foreach ($this->_params['stations_info'] as $k => $v) {
+                $v['start_date'] = strtotime($v['start_date']);
+                $v['end_date'] = strtotime($v['end_date']);
+                $v['category_id'] = $jobData['category_id'];
                 $v['job_id'] = $jobId;
                 if(!$jobInfo->save($v)) {
                     $this->db->rollback();
@@ -277,7 +280,7 @@ class JobController extends BaseController {
                 }
             }
             $this->db->commit();
-            return $this->responseJson("Success",Lang::_M(JOB_CREATE_SUCCESS));
+            return $this->responseJson("Success", Lang::_M(JOB_CREATE_SUCCESS), ['id' => $jobId]);
         } else {
             return $this->responseJson("FAILD",Lang::_M(JOB_CREATE_FAILD));
         }
@@ -630,8 +633,11 @@ class JobController extends BaseController {
         if($this->_params['company_id']) {
             $conditons[] = 'company_id='.$this->_params['company_id'];
         }
-        if($this->_params['status']) {
-            $conditons[] = 'status='.$this->_params['status'];
+        if($this->_params['status'] && $this->_params['status'] != 300) {
+            $conditons[] = 'status = '.$this->_params['status'];
+        } elseif($this->_params['status']) {
+            $conditons[] = 'status between 300 AND 400';
+
         }
         if($this->_params['create_time']) {
             $conditons[] = 'create_time >='.$this->_params['create_time'];
@@ -643,20 +649,44 @@ class JobController extends BaseController {
         $page = $this->_params['page'] ? $this->_params['page'] : 1;
         $size = $this->_params['size'] ? $this->_params['size'] : 30;
         $start = ($page - 1) * $size;
+        $jobModel = new Job();
+        $where =array(
+            'company_id' => $this->_params['company_id'],
+        );
+        //全部数量
+        $totalcount[0] = $jobModel->getCount($where);
+        //发布中
+        $where['status'] = 100;
+        $totalcount[1] = $jobModel->getCount($where);
+        //审核中数量
+        $where['status'] = 200;
+        $totalcount[2] = $jobModel->getCount($where);
+        $where['$bt'] = array(
+            "status" => array(300,400)
 
+        );
+        file_put_contents("/tmp/content_tmp", var_export($conditons, true), FILE_APPEND);
+        unset($where['status']);
+        $totalcount[3] = $jobModel->getCount($where);
         $Jobs = Job::find([
             implode(' AND ',$conditons),
             'offset' => $start,
             'limit'  => $size,
             "order" => "refurbish_time DESC",
         ])->toArray() ;
-        if(!$Jobs) {
-            return $this->responseJson("FAILD",Lang::_M(JOB_LIST_EMPTY));
+//
+//        if(!$Jobs) {
+//            return $this->responseJson("FAILD",Lang::_M(JOB_LIST_EMPTY));
+//        }
+        if($Jobs) {
+            foreach($Jobs as $Jk => $Jv) {
+                $Jobs[$Jk]['list'] = JobInfo::find(['job_id' => $Jv['id']])->toArray();
+            }
         }
-        foreach($Jobs as $Jk => $Jv) {
-            $Jobs[$Jk]['list'] = JobInfo::find(['job_id' => $Jv['id']])->toArray();
-        }
-        return $this->responseJson("Success",Lang::_M(JOB_LIST_SUCCESS), $Jobs);
+
+        $returnList['list'] = $Jobs ? $Jobs : array();
+        $returnList['totalCount'] = $totalcount ? $totalcount : 0;
+        return $this->responseJson("Success",Lang::_M(JOB_LIST_SUCCESS), $returnList);
     }
 
     /**
@@ -748,6 +778,9 @@ class JobController extends BaseController {
         $info = $jobModel->findFirst($job_id)->toArray();
         if(!$info) {
             return $this->responseJson("FAILD",Lang::_M(JOB_INFO_NO_EXISE));
+        }
+        if($info['job_desc']) {
+            $info['job_desc'] = htmlspecialchars($info['job_desc']);
         }
         $jobInfoModel = new JobInfo();
         $joblist = $jobInfoModel->find('job_id='.$job_id)->toArray();
@@ -1037,7 +1070,7 @@ class JobController extends BaseController {
 
     /**
      * @apiVersion 1.0.0
-     * @api {post} /job/refurbish 刷新职位
+     * @api {post} /job/refresh 刷新职位
      * @apiUse Token
      * @apiName refresh
      * @apiGroup Jobs
