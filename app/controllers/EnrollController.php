@@ -63,7 +63,7 @@ class EnrollController extends BaseController {
         $existWhere['uid'] = $this->_params['uid'];
         $existWhere['job_info_id'] = $this->_params['job_info_id'];
         $existWhere['resume_id'] = $this->_params['resume_id'];
-        $existWhere['work_date'] = $this->_params['date'];
+        //$existWhere['work_date'] = $this->_params['date'];
         $enrollModel = new Enroll();
         if($enrollModel->findOne($existWhere)) {
             return $this->responseJson("FAILD", Lang::_M(ENROLL_NO_REPEAT));

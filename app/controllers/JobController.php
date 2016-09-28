@@ -775,7 +775,8 @@ class JobController extends BaseController {
             return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
         }
         $jobModel = new Job();
-        $info = $jobModel->findFirst($job_id)->toArray();
+        $infoTmp = $jobModel->findFirst($job_id);
+        $info = $infoTmp ? $infoTmp->toArray() : array();
         if(!$info) {
             return $this->responseJson("FAILD",Lang::_M(JOB_INFO_NO_EXISE));
         }
@@ -982,55 +983,55 @@ class JobController extends BaseController {
 
         switch ($this->_params['order_type']) {
             case 100 :
-                $sort = 'refurbish_time DESC';
+                $sort = 'refurbish_time';
                 break;
             case 200 :
-                $sort = ' distance ASC';
-                $columns = array('*','ROUND(6378.138*2*ASIN(SQRT(POW(SIN((42.299439*PI()/180-lat*PI()/180)/2),2)+COS(22.299439*PI()/180)*COS(lat*PI()/180)*POW(SIN((116.173881*PI()/180-lng*PI()/180)/2),2)))*1000) AS distance');
+                $sort = 'distance ASC';
                 break;
             case 300 :
-                $sort = 'create_time DESC';
+                $sort = 'create_time';
                 break;
             case 400 :
-                $sort = 'parttime_money DESC';
+                $sort = 'parttime_money';
                 break;
         }
-
-
-        $sql = "select *,ROUND(6378.138*2*ASIN(SQRT(POW(SIN((42.299439*PI()/180-lat*PI()/180)/2),2)+COS(22.299439*PI()/180)*COS(lat*PI()/180)*POW(SIN((116.173881*PI()/180-lng*PI()/180)/2),2)))*1000) AS distance from ys_jobs_info";
+        $sql = "select *, ROUND(6378.138*2*ASIN(SQRT(POW(SIN((42.299439*PI()/180-lat*PI()/180)/2),2)+COS(22.299439*PI()/180)*COS(lat*PI()/180)*POW(SIN((116.173881*PI()/180-lng*PI()/180)/2),2)))*1000) AS distance from ys_jobs_info";
         $conditons[] = 'is_delete = 100';
         $sql .= " where ".implode(' AND ',$conditons);
-        $sql .= ' order by '.$sort.' limit '.$start.','.$size;
-        $countSql = "select count(1) as totalCount from ys_jobs_info where ".implode(' AND ', $conditons) ;
-
+        $this->_params['order_type'] == 200 && $sql .= ' order by distance ASC ' ;
+        $sql .= ' limit '.$start.','.$size;
         $jobInfoObject = new JobInfo();
         $InfoTmp =  new Resultset(null, $jobInfoObject, $jobInfoObject->getReadConnection()->query($sql));
-        $count = new Resultset(null, $jobInfoObject, $jobInfoObject->getReadConnection()->query($countSql));
-        $totalTmp = $count->toArray();
         $Jobs = $InfoTmp->toArray();
         if(!$Jobs) {
             return $this->responseJson("FAILD",Lang::_M(JOB_LIST_EMPTY));
         }
         foreach($Jobs as $Jk => $Jv) {
             $ids[] = $Jv['job_id'];
-            $JobList[$Jv['job_id']]['list'][] = $Jv;
         }
-
-        $idstr = implode(',', $ids);
-        $Jsql = "select * from ys_jobs where id IN($idstr)";
+        if(isset($ids) && !empty($ids)) {
+            $idstr = implode(',', $ids);
+            $Jsql = "select * from ys_jobs where id IN($idstr)";
+        }
         $JobObject = new Job();
         $JobTmp =  new Resultset(null, $JobObject, $JobObject->getReadConnection()->query($Jsql));
         $JobTmp = $JobTmp->toArray();
-        foreach($JobList as $k => &$v) {
-            foreach($JobTmp as $ik => $iv) {
-                if($k == $iv['id']) {
-                    $JobList[$k]['jobInfo'] =  $iv;
+        if($JobTmp) {
+            foreach($JobTmp as $jk => &$job) {
+                $sSql = 'select min(start_date) as start_date, max(end_date) as end_date from ys_jobs_info where job_id ='.$job['id'];
+                $jobInfoObject = new JobInfo();
+                $InfoTmp =  new Resultset(null, $jobInfoObject, $jobInfoObject->getReadConnection()->query($sSql));
+                $sDateAndEdate =  $InfoTmp->toArray();
+                $job['start_date'] = $sDateAndEdate[0]['start_date'];
+                $job['end_date'] = $sDateAndEdate[0]['end_date'];
+                if($this->_params['order_type'] != 200) {
+                    $jobList[$job[$sort]] = $job;
                 }
             }
+            krsort($jobList);
         }
-        $return = array_values($JobList);
-        $return['totalCount'] = $totalTmp[0]['totalCount'];
-        return $this->responseJson("Success",Lang::_M(JOB_LIST_SUCCESS), $return);
+        $return = array_values($JobTmp);
+        return $this->responseJson("Success",Lang::_M(JOB_LIST_SUCCESS), $jobList);
     }
 
     /**
