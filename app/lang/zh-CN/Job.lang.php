@@ -61,6 +61,8 @@ $_LANG['JOB_AUTO_SETTING_FAILD'] = ['codes'=> 10001, 'msg' => '自动刷新设�
 $_LANG['JOB_AUTO_SETTING_SUCCESS'] = ['codes'=> 0, 'msg' => '自动刷新设置成功!'];
 $_LANG['USER_ID_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '用户ID不能为空!'];
 $_LANG['JOB_FAV_SUCCESS'] = ['codes'=> 0, 'msg' => '收藏职位成功!'];
+$_LANG['JOB_FAV_EXSIST'] = ['codes'=> 0, 'msg' => '已收藏!'];
+$_LANG['JOB_FAV_NO_EXSIST'] = ['codes'=> 0, 'msg' => '未收藏!'];
 $_LANG['JOB_FAV_FAILD'] = ['codes'=> 10001, 'msg' => '收藏职位失败!'];
 $_LANG['JOB_FAV_NO_REPEAT'] = ['codes'=> 10001, 'msg' => '不能重复收藏职位哦!'];
 $_LANG['JOB_GET_FAV_LIST_SUCCESS'] = ['codes'=> 0, 'msg' => '获取收藏职位列表成功!'];

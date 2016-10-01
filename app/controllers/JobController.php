@@ -665,7 +665,6 @@ class JobController extends BaseController {
             "status" => array(300,400)
 
         );
-        file_put_contents("/tmp/content_tmp", var_export($conditons, true), FILE_APPEND);
         unset($where['status']);
         $totalcount[3] = $jobModel->getCount($where);
         $Jobs = Job::find([
@@ -679,12 +678,13 @@ class JobController extends BaseController {
 //            return $this->responseJson("FAILD",Lang::_M(JOB_LIST_EMPTY));
 //        }
         if($Jobs) {
+            $jonInfo =new JobInfo();
             foreach($Jobs as $Jk => $Jv) {
-                $Jobs[$Jk]['list'] = JobInfo::find(['job_id' => $Jv['id']])->toArray();
+                $Jobs[$Jk]['list'] = $jonInfo->findAll(['job_id' => $Jv['id']])->toArray();
             }
         }
-
         $returnList['list'] = $Jobs ? $Jobs : array();
+
         $returnList['totalCount'] = $totalcount ? $totalcount : 0;
         return $this->responseJson("Success",Lang::_M(JOB_LIST_SUCCESS), $returnList);
     }
@@ -1436,7 +1436,7 @@ class JobController extends BaseController {
 
     /**
      * @apiVersion 1.0.0
-     * @api {post} /job/fav  职位收藏
+     * @api {post} /job/favJob  职位收藏
      * @apiUse Token
      * @apiName fav
      * @apiGroup Jobs
@@ -1476,6 +1476,45 @@ class JobController extends BaseController {
             return $this->responseJson("SUCCESS",Lang::_M(JOB_FAV_FAILD));
         }
         return $this->responseJson("SUCCESS",Lang::_M(JOB_FAV_SUCCESS));
+
+    }
+    
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /job/isFav  是否收藏职位
+     * @apiUse Token
+     * @apiName fav
+     * @apiGroup Jobs
+     * @apiDescription 职位收藏.
+     * @apiParam {Number} uid 用户ID.
+     * @apiParam {Number} job_id 职位ID.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"SUCCESS","code":"0",data:1}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"FAILD","code":"10001","msg":"请求失败"}
+     */
+    public function isFavAction() {
+        if(!$this->_params['uid']) {
+            return $this->responseJson("FAILD",Lang::_M(USER_ID_NO_EMPTY));
+        }
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobModel = new Job();
+        $jobInfo = $jobModel->findFirst($this->_params['job_id']);
+        if(count($jobInfo) != 1) {
+            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_NO_EXISE));
+        }
+        $favInfo['uid'] = $this->_params['uid'];
+        $favInfo['job_id'] = $this->_params['job_id'];
+        $favModel = new JobFav();
+        $count = $favModel->getCount(array('uid'=>$favInfo['uid'], 'job_id'=>$favInfo['job_id']), 'ys_jobs_fav');
+        if($count > 0) {
+            return $this->responseJson("SUCCESS",Lang::_M(JOB_FAV_EXSIST), 1);
+        }
+        return $this->responseJson("SUCCESS",Lang::_M(JOB_FAV_NO_EXSIST), 0);
 
     }
 

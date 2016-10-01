@@ -9,7 +9,7 @@
 namespace Models;
 
 
-class JobInfo extends \Phalcon\Mvc\Model
+class JobInfo extends BaseModel
 {
     public function initialize() {
 

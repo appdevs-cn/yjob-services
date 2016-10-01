@@ -76,6 +76,11 @@ $routes[] = [
     'route'  => '/job/favJob',
     'handler' => ['Controllers\JobController', 'favJobAction']
 ];
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/isFav',
+    'handler' => ['Controllers\JobController', 'isFavAction']
+];
 
 $routes[] = [
     'method' => 'get',
@@ -141,6 +146,24 @@ $routes[] = [
     'method' => 'post',
     'route'  => '/enroll/leaveEarly',
     'handler' => ['Controllers\EnrollController', 'leaveEarlyAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/enrollCount',
+    'handler' => ['Controllers\EnrollController', 'enrollCountAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/isEnroll',
+    'handler' => ['Controllers\EnrollController', 'isEnrollAction']
+];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/list',
+    'handler' => ['Controllers\EnrollController', 'listAction']
 ];
 
 

@@ -22,8 +22,6 @@ class EnrollController extends BaseController {
      * @apiParam (响应信息){String} msg 响应信息.
      */
 
-
-
     /**
      * @apiVersion 1.0.0
      * @api {post} /enroll/add  职位报名
@@ -77,6 +75,7 @@ class EnrollController extends BaseController {
         $enrollInfo['job_info_id'] = $this->_params['job_info_id'];
         $enrollInfo['job_id'] = $this->_params['job_id'];
         $enrollInfo['resume_id'] = $this->_params['resume_id'];
+        $enrollInfo['company_id'] = $this->_params['company_id'];
         $enrollInfo['work_date'] = $this->_params['date'];
         $enrollInfo['enroll_type'] = $this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100 ;
         $enrollInfo['position_type'] = $this->_params['position_type'] ? $this->_params['position_type'] : 100;
@@ -101,6 +100,7 @@ class EnrollController extends BaseController {
      * @apiParam {String} desc 备注.
      * @apiParam {Number} job_info_id 职位点位ID.
      * @apiParam {Number} position_type 岗位类型(100=>普通,200=>督导).
+     * @apiParam {Number} check_status 查看状态 (100=>未查看,200=>已查看).
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
      * {"status":"SUCCESS","code":"0","msg":"更新成功!"}
@@ -115,6 +115,7 @@ class EnrollController extends BaseController {
         $this->_params['job_info_id'] && $enrollInfo['job_info_id'] = $this->_params['job_info_id'];
         $this->_params['desc'] && $enrollInfo['remark'] = $this->_params['desc'];
         $this->_params['position_type'] && $enrollInfo['position_type'] = $this->_params['position_type'];
+        $this->_params['check_status'] && $enrollInfo['check_status'] = $this->_params['check_status'];
         $enrollMode = new Enroll();
         $enrollTmp = $enrollMode->findOne(array('id' => $this->_params['enroll_id']));
         if(!$enrollTmp) {
@@ -133,12 +134,14 @@ class EnrollController extends BaseController {
      * @apiName list
      * @apiGroup enroll
      * @apiDescription 获取职位报名列表.
+     * @apiParam {Number} company_id 企业ID.
      * @apiParam {Number} job_id 职位ID.
+     * @apiParam {Number} job_info_id 点位ID.
      * @apiParam {Number} uid 用户id.
      * @apiParam {Number} date 工作时间.
      * @apiParam {Number} enroll_type 报名方式(100=>正常报名,200=>续约报名).
      * @apiParam {Number} status 报名状态(100=>等待操作,200=>通过,301=>已完成,302=>放鸽子,303=>早退,400=>弃用,500=>取消,600=>备用)',
-     * @apiParam {Number} station_type 岗位类型(100=>普通,200=>督导).
+     * @apiParam {Number} position_type 岗位类型(100=>普通,200=>督导).
      * @apiParam {Number} check_status 查看状态(100=>未查看,200=>已查看)
      * @apiParam {Number} sort 岗位类型(100=>默认排序,200=>点位排序).
      * @apiParam {Number} page 页码.
@@ -151,7 +154,39 @@ class EnrollController extends BaseController {
      * {"status":"FAILD","code":"10001","msg":"获取职位报名列表失败!"}
      */
     public function listAction() {
+       $this->_params['company_id'] && $where['company_id'] = $this->_params['company_id'];
+       $this->_params['job_id'] && $where['job_id'] = $this->_params['job_id'];
+       $this->_params['job_info_id'] && $where['job_info_id'] = $this->_params['job_info_id'];
+       $this->_params['uid'] && $where['uid'] = $this->_params['uid'];
+       $this->_params['date'] && $where['date'] = $this->_params['date'];
+       $where['enroll_type'] =$this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100;
+       $this->_params['status'] && $where['status'] =$this->_params['status'];
+       $this->_params['position_type'] && $where['position_type'] = $this->_params['position_type'];
+       $this->_params['check_status'] && $where['check_status'] = $this->_params['check_status'];
+       $sort = $this->_params['sort'] ? $this->_params['sort'] : 100;
+       if($sort == 100) {
+           $order = "apply_time DESC";
+       }
+       $page = $this->_params['page'] ? $this->_params['page'] : 1;
+       $size = $this->_params['size'] ? $this->_params['size'] : 30;
+       $start = ($page - 1) * $size;
+       $enrollMode = new Enroll();
+       $totalCount = $enrollMode->getCount(['company_id' => $this->_params['company_id']]);
+       $enrollListRst = $enrollMode->findAll($where, $start, $size, $order);
+       //已查看
+       $countNVwhere = array_merge($where, array('check_status' => 100));
+       $nvCount = $enrollMode->getCount($countNVwhere);
+       $countVwhere = array_merge($where, array('check_status' => 200));
+       $vCount = $enrollMode->getCount($countVwhere);
 
+       if($enrollListRst) {
+            $enrollList['list'] = $enrollListRst->toArray();
+            $enrollList['totalCount'] = $totalCount ? $totalCount : 0;
+            $enrollList['vcount'] = $vCount;
+            $enrollList['nvcount'] = $nvCount;
+            return $this->responseJson("SUCCESS", Lang::_M(ENROLL_LIST_SUCCESS), $enrollList);
+       }
+       return $this->responseJson("FAILD", Lang::_M(ENROLL_LIST_EMPTY));
     }
 
     /**
@@ -171,7 +206,7 @@ class EnrollController extends BaseController {
      * {"status":"FAILD","code":"10001","msg":"审核失败!"}
      */
     public function statusAction() {
-        if(!$this->_params['enroll_ids']) {
+        if(!is_array($this->_params['enroll_ids']) || !$this->_params['enroll_ids']) {
             return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
         }
         if(!$this->_params['status']) {
@@ -186,9 +221,70 @@ class EnrollController extends BaseController {
             }
             $updateInfo['status'] = $this->_params['status'];
             $urs = $eInfo->save($updateInfo);
-            $returnList[$eid] = $urs ? 100 : 200;
+            if($urs) {
+                $eInfo->status = $this->_params['status'];
+            }
+            $returnList[$eid] = $eInfo->toArray();
         }
         return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS), $returnList);
+    }
+    
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /enroll/isEnroll  是否报名
+     * @apiUse Token
+     * @apiName isEnroll
+     * @apiGroup enroll
+     * @apiDescription 是否报名.
+     * @apiParam {Number} job_id 职位ID.
+     * @apiParam {Number} uid 用户id.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"SUCCESS","code":"0","msg":"已报名!","data":"1"}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"FAILD","code":"10001","msg":"未报名!"}
+     */
+    public function isEnrollAction() {
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_JOB_ID_NOT_EMPTY));
+        }
+        if(!$this->_params['uid']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_UID_NOT_EMPTY));
+        }
+        $where['job_id'] = $this->_params['job_id'];
+        $where['uid'] = $this->_params['uid'];
+        $enrollModel = new Enroll();
+        $enrollCount = $enrollModel->getCount($where);
+        if($enrollCount) {
+            return $this->responseJson("SUCCESS", Lang::_M(ENROLL_EXISTS), $enrollCount);
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_NOT_EXISTS));
+    }
+    
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /enroll/enrollCount  职位报名数
+     * @apiUse Token
+     * @apiName enrollCount
+     * @apiGroup enroll
+     * @apiDescription 职位报名数.
+     * @apiParam {Number} job_id 职位ID.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"SUCCESS","code":"0","msg":"获取报名数成功!","data":{"enrollCont":"10"}}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"FAILD","code":"10001","msg":"获取报名数失败!"}
+     */
+    public function enrollCountAction() {
+        if(!$this->_params['job_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_JOB_ID_NOT_EMPTY));
+        }
+        $where['job_id'] = $this->_params['job_id'];
+        $enrollModel = new Enroll();
+        $enrollCount = $enrollModel->getCount($where);
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_GET_COUNT_SUCCESS), ['enrollCount' => $enrollCount]);
     }
 
 

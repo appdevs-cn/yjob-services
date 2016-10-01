@@ -2,7 +2,6 @@
 
 
 class ClientTask extends Phalcon\CLI\Task {
-
     
 	public function sendAction() {
             $a = json_encode(array('aaa' => '111'));
