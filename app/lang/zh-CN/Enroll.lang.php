@@ -15,5 +15,6 @@ $_LANG['ENROLL_INFO_UPDATE_FAILD'] = ['codes'=> 10001, 'msg' => '报名信息更
 $_LANG['ENROLL_INFO_UPDATE_SUCCESS'] = ['codes'=> 0, 'msg' => '报名信息更新成功!'];
 $_LANG['ENROLL_STATUS_NOT_EMPTY'] = ['codes'=> 10001, 'msg' => '更改状态信息不能为空!'];
 $_LANG['ENROLL_LIST_SUCCESS'] = ['codes'=> 0, 'msg' => '获取报名列表成功!'];
+$_LANG['ENROLL_INFO_SUCCESS'] = ['codes'=> 0, 'msg' => '获取报名信息成功!'];
 $_LANG['ENROLL_LIST_EMPTY'] = ['codes'=> 0, 'msg' => '获取报名列表为空!'];
 return $_LANG;

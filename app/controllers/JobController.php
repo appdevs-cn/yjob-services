@@ -1221,7 +1221,7 @@ class JobController extends BaseController {
      * @apiParam {Number} sign_time 签到时间.
      * @apiParam {Json} sign_pic 签到图片.
      * @apiParam {String} remark 签到备注.
-     * @apiParam {Number=100,200} type=100 签到/签退(100=>签到,200=>签退)
+     * @apiParam {Number=100,200} sign_type=100 签到/签退(100=>签到,200=>签退)
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
      * {"status":"SUCCESS","code":"0","msg":"签到成功"}
@@ -1245,7 +1245,6 @@ class JobController extends BaseController {
         }
         if(!$this->_params['sign_address']) {
             return $this->responseJson("FAILD",Lang::_M(SIGN_ADDR_NO_EMPTY));
-
         }
         if(!$this->_params['sign_pic'] || count($this->_params['sign_pic'] ) > 3) {
             return $this->responseJson("FAILD",Lang::_M(SIGN_PIC_NO_EMPTY));
@@ -1256,7 +1255,6 @@ class JobController extends BaseController {
         if(!$rInfo['id']) {
             $this->responseJson("FAILD",Lang::_M(ENROLL_INFO_NO_EXSIST));
         }
-        $enRollModel = $enRollModel->toArray();
         $signInfo['work_date'] = $rInfo['work_date'];
         $workModel = new Work();
         $where['enroll_id'] = $this->_params['enroll_id'];
@@ -1275,7 +1273,7 @@ class JobController extends BaseController {
             $signInfo['sign_pic'] = $this->_params['sign_pic'];
             $signInfo['sign_address'] = $this->_params['sign_address'];
             $signInfo['remark'] = $this->_params['remark'];
-            $signInfo['work_date'] = $enRollModel['work_date'];
+            $signInfo['work_date'] = $rInfo['work_date'];
             $rs = $workInfo->save($signInfo);
         } else {
             $signInfo['sign_type'] = $this->_params['sign_type'] ? $this->_params['sign_type'] : 100;
@@ -1306,9 +1304,11 @@ class JobController extends BaseController {
      * @apiGroup Jobs
      * @apiDescription 职位签到列表.
      * @apiParam {Number} job_id 职位ID.
+     * @apiParam {Number} uid 用户id.
      * @apiParam {Number} job_info_id 点位ID.
      * @apiParam {Number} type 操作类型(100=>签到,200=>签退).
      * @apiParam {Number} date 日期.
+     * @apiParam {Number} status 审核状态(100=>待确认,200=>通过,300=>拒绝).
      * @apiParam {Number} show_type 查看方式(100=>默认,200=>图片).
      * @apiParam {Number} page 页码.
      * @apiParam {Number} size 每页返回数量.
@@ -1342,23 +1342,28 @@ class JobController extends BaseController {
      * {"status":"FAILD","code":"10001","msg":"确认失败"}
      */
     public function pastListAction() {
-        if(!$this->_params['job_id']) {
-            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
-        }
-        if(!$this->_params['job_info_id']) {
-            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_IDS_NO_EMPTY));
-        }
+//        if(!$this->_params['job_id']) {
+//            return $this->responseJson("FAILD",Lang::_M(JOB_IDS_NO_EMPTY));
+//        }
+//        if(!$this->_params['uid']) {
+//            return $this->responseJson("FAILD",Lang::_M(USER_ID_NO_EMPTY));
+//        }
+//        if(!$this->_params['job_info_id']) {
+//            return $this->responseJson("FAILD",Lang::_M(JOB_INFO_IDS_NO_EMPTY));
+//        }
         $page = $this->_params['page'] ? $this->_params['page'] : 1;
         $size = $this->_params['size'] ? $this->_params['size'] : 30;
         $start = ($page - 1) * $size;
-        $date =  $this->_params['date'] ? $this->_params['date'] : '';
         if($this->_params['show_type'] == 200) {
             $where['$ne'] = array('sign_pic' => null);
         }
-        $this->_params['type'] && $where['type'] = $this->_params['type'];
-        $where['job_id'] = $this->_params['job_id'];
-        $where['work_date'] = $this->_params['date'];
-        $where['job_info_id'] = $this->_params['job_info_id'];
+        $this->_params['type'] && $where['sign_type'] = $this->_params['type'];
+        $this->_params['job_id'] && $where['job_id'] = $this->_params['job_id'];
+        $this->_params['date'] && $where['work_date'] = $this->_params['date'];
+        $this->_params['job_info_id'] && $where['job_info_id'] = $this->_params['job_info_id'];
+        $this->_params['uid'] && $where['uid'] =  $this->_params['uid'];
+        $this->_params['status'] && $where['confirm_status'] =  $this->_params['status'];
+
         $workModel = new Work();
         $count = $workModel->getCount($where);
         $signList = $workModel->findAll($where,$start, $size)->toArray();
@@ -1379,7 +1384,7 @@ class JobController extends BaseController {
      * @apiVersion 1.0.0
      * @api {post} /job/confirm  工作状态确认
      * @apiUse Token
-     * @apiName past
+     * @apiName confirm
      * @apiGroup Jobs
      * @apiDescription 签到/签退/续约确认.
      * @apiParam {Number[]} sign_ids 签到/签退id.
@@ -1418,10 +1423,9 @@ class JobController extends BaseController {
         $work = new Work();
         foreach($this->_params['sign_ids'] as $sidk => $sid) {
             $where['id'] = $sid;
-            echo $sid;
             $sInfo = $work->findOne($where);
             if($sInfo) {
-                $updateInfo['confirm_status'] = $this->_params['status'];
+                $updateInfo['confirm_status'] = $this->_params['status'] == 100 ? 200 : 300;
                 $updateInfo['confirm_uid'] = $this->_params['confirm_uid'];
                 $updateInfo['confirm_user_name'] = $this->_params['confirm_user_name'];
                 $updateInfo['confirm_user_position'] = $this->_params['confirm_user_position'];
@@ -1681,7 +1685,7 @@ class JobController extends BaseController {
 
     /**
      * @apiVersion 1.0.0
-     * @api {post} /job/statistics  获取点位统计信息
+     * @api {post} /job/jobStatistics  获取点位统计信息
      * @apiUse Token
      * @apiName reputation
      * @apiGroup Jobs
@@ -1739,16 +1743,21 @@ class JobController extends BaseController {
             //签到率
             $return['list'][$jinfo['id']]['sign_in_rate'] = round(($counterInfo->sign_in / $jobTeamUserCount) * 100);
             //签到人数
-            $return['list'][$jinfo['id']]['sign_in'] = $counterInfo->sign_in;
+            $return['list'][$jinfo['id']]['sign_in'] = $counterInfo->sign_in ? $counterInfo->sign_in : 0;
             //有效签到人数
-            $return['list'][$jinfo['id']]['sign_in_valid'] = $counterInfo->sign_in_valid;
+            $return['list'][$jinfo['id']]['sign_in_valid'] = $counterInfo->sign_in_valid ? $counterInfo->sign_in_valid : 0;
             //签退人数
-            $return['list'][$jinfo['id']]['sign_out'] = $counterInfo->sign_out;
+            $return['list'][$jinfo['id']]['sign_out'] = $counterInfo->sign_out ? $counterInfo->sign_out : 0;
+            //签退率
+            $return['list'][$jinfo['id']]['sign_out_rate'] = round(($counterInfo->sign_out / $jobTeamUserCount) * 100);
+
             //有效签退人数
-            $return['list'][$jinfo['id']]['sign_out_valid'] = $counterInfo->sign_out_valid;
+            $return['list'][$jinfo['id']]['sign_out_valid'] = $counterInfo->sign_out_valid ? $counterInfo->sign_out_valid : 0;
+            //应评价人数
+            $return['list'][$jinfo['id']]['totalEveluaCount'] = $jobTeamUserCount;
             //评价人数
-            $return['list'][$jinfo['id']]['EveluaCount'] = $counterInfo->evaluate;
-            //忘记评价数
+            $return['list'][$jinfo['id']]['eveluaCount'] = $counterInfo->evaluate ? $counterInfo->evaluate : 0;
+            //未评价数
             $return['list'][$jinfo['id']]['fEveluaCount'] = $jobTeamUserCount - $counterInfo->evaluate;
             //未签到
             $return['list'][$jinfo['id']]['sign_in_vitiation'] = $counterInfo->sign_in - $counterInfo->sign_in_valid;
@@ -1791,6 +1800,29 @@ class JobController extends BaseController {
         $return['total_rate'] = round($return['total_rate'] / count($jonInfoList) * 100);
 
         return $this->responseJson("SUCCESS", Lang::_M(JOB_GET_RATE_SUCCESS), $return);
+    }
+    
+    
+    public function jobPtInfoAction() {
+        if(!$this->_params['job_info_id']) {
+            return $this->responseJson("FAILD", Lang::_M(JOB_IDS_NO_EMPTY));
+        }
+        $jobInfoModel = new JobInfo();
+        $where['id'] = $this->_params['job_info_id'];
+        $ptInfo = $jobInfoModel->findOne($where);
+        if(!$ptInfo) {
+            return $this->responseJson("FAILD", Lang::_M(JOB_INFO_NO_EXISE));
+        }
+        $jobInfo = $ptInfo->toArray();
+        if($jobInfo) {
+            $jobTeamModel = new JobTeam();
+            $twhere['job_info_id'] = $jobInfo['id'];
+            $twhere['type'] = 200;
+            $ddInfo = $jobTeamModel->findOne($twhere);
+            $ddInfo = $ddInfo ? $ddInfo->toArray() : array();
+            $jobInfo['dd_uid'] = $ddInfo['uid'];
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(JOB_GET_LIST_SUCCESS), $jobInfo);
     }
 
 }

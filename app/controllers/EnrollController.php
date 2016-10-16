@@ -4,6 +4,7 @@ namespace Controllers;
 use Models\Enroll;
 use Models\Job;
 use Models\JobInfo;
+use Models\Team;
 use Utilities\Common\Lang;
 
 class EnrollController extends BaseController {
@@ -124,6 +125,23 @@ class EnrollController extends BaseController {
         if(!$enrollTmp->save($enrollInfo)) {
             return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_UPDATE_FAILD));
         }
+        if($this->_params['position_type']) {
+            $where['uid'] = $enrollTmp->uid;
+            $where['job_info_id'] = $enrollTmp->job_info_id;
+            $team = new Team();
+            $teamInfo = $team->findOne($where);
+            if($teamInfo) {
+                $data['type'] = $this->_params['position_type'];
+                $trs = $teamInfo->save($data);
+            } else {
+                $data['job_id'] = $enrollTmp->job_id;
+                $data['job_name'] = $enrollTmp->job_name;
+                $data['job_info_id'] = $enrollTmp->job_info_id;
+                $data['uid'] = $enrollTmp->uid;
+                $data['type'] = $enrollTmp->position_type;
+                $team->create($data);
+            }
+        }
         return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS));
     }
 
@@ -224,6 +242,23 @@ class EnrollController extends BaseController {
             if($urs) {
                 $eInfo->status = $this->_params['status'];
             }
+            if($eInfo->status == 200) {
+                $team = new Team();
+                $uwhere['uid'] = $eInfo->uid;
+                $uwhere['job_info_id'] = $eInfo->job_info_id;
+                $teamInfo = $team->findOne($uwhere);
+                if($teamInfo) {
+                    $data['type'] = $this->_params['position_type'];
+                    $trs = $teamInfo->save($data);
+                } else {
+                    $data['job_id'] = $eInfo->job_id;
+                    $data['job_name'] = $eInfo->job_name;
+                    $data['job_info_id'] = $eInfo->job_info_id;
+                    $data['uid'] = $eInfo->uid;
+                    $data['type'] = $eInfo->position_type;
+                    $team->create($data);
+                }
+            }
             $returnList[$eid] = $eInfo->toArray();
         }
         return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS), $returnList);
@@ -321,6 +356,35 @@ class EnrollController extends BaseController {
         $updateInfo['stood'] = $this->_params['status'] == 100 ? 200 : 100;
         $urs = $eInfo->save($updateInfo);
         return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS));
+    }
+    
+    /**
+     * @apiVersion 1.0.0
+     * @api {post} /enroll/info  获取报名信息
+     * @apiUse Token
+     * @apiName info
+     * @apiGroup enroll
+     * @apiDescription 获取报名信息.
+     * @apiParam {Number} enroll_id 报名ID.
+     * @apiUse Response
+     * @apiSuccessExample {json} 成功返回样例:
+     * {"status":"SUCCESS","code":"0","msg":"获取报名信息成功","data":""}
+     * @apiUse Response
+     * @apiErrorExample {json} 失败返回样例
+     * {"status":"FAILD","code":"10001","msg":"标记失败"}
+     */
+    public function infoAction() {
+        if(!$this->_params['enroll_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        $enrollModel = new Enroll();
+        $where['id'] = $this->_params['enroll_id'];
+        $this->_params['position_type'] && $where['position_type'] = $this->_params['position_type'];
+        $eInfo = $enrollModel->findOne($where);
+        if(!$eInfo) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
+        }
+        return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_SUCCESS), $eInfo);
     }
 
     /**

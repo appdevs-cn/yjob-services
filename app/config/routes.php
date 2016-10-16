@@ -166,6 +166,12 @@ $routes[] = [
     'handler' => ['Controllers\EnrollController', 'listAction']
 ];
 
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/enroll/info',
+    'handler' => ['Controllers\EnrollController', 'infoAction']
+];
+
 
 $routes[] = [
     'method' => 'post',
@@ -233,6 +239,14 @@ $routes[] = [
     'route'  => '/user/reputation',
     'handler' => ['Controllers\UserController', 'reputationAction']
 ];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/jobPtInfo',
+    'handler' => ['Controllers\JobController', 'jobPtInfoAction']
+];
+
+
 
 return $routes;
 
