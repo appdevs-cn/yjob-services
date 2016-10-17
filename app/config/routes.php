@@ -113,8 +113,8 @@ $routes[] = [
 ];
 
 $routes[] = [
-    'method' => 'get',
-    'route'  => '/job/evaluateInfo/{eid}',
+    'method' => 'post',
+    'route'  => '/job/evaluateInfo',
     'handler' => ['Controllers\JobController', 'evaluateInfoAction']
 ];
 
@@ -245,6 +245,14 @@ $routes[] = [
     'route'  => '/job/jobPtInfo',
     'handler' => ['Controllers\JobController', 'jobPtInfoAction']
 ];
+
+$routes[] = [
+    'method' => 'post',
+    'route'  => '/job/evalList',
+    'handler' => ['Controllers\JobController', 'evalListAction']
+];
+
+
 
 
 

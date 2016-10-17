@@ -1378,8 +1378,6 @@ class JobController extends BaseController {
         return $this->responseJson("SUCCESS",Lang::_M(JOB_LIST_SUCCESS), $return);
     }
 
-
-
     /**
      * @apiVersion 1.0.0
      * @api {post} /job/confirm  工作状态确认
@@ -1573,7 +1571,6 @@ class JobController extends BaseController {
 
     }
 
-
     /**
      * @apiVersion 1.0.0
      * @api {post} /job/evaluate  工作评价
@@ -1639,9 +1636,15 @@ class JobController extends BaseController {
         if (!$rs) {
             return $this->responseJson("FAILD", Lang::_M(EVALUATE_USER_FAILD));
         }
+        $enrollModel = new Enroll();
+        $enrollInfo = $enrollModel->findOne(['id' => $this->_params['enroll_id']]);
+        if($enrollInfo->evaluate_status == 100) {
+            $enrollInfo->evaluate_status = 200;
+            $enrollInfo->save();
+        }
         return $this->responseJson("SUCCESS", Lang::_M(EVALUATE_USER_SUCCESS));
     }
-
+    
     /**
      * @apiVersion 1.0.0
      * @api {post} /job/evaluateInfo  获取评价详情
@@ -1671,12 +1674,12 @@ class JobController extends BaseController {
      * @apiErrorExample {json} 失败返回样例
      * {"status":"FAILD","code":"10001","msg":"获取评价详情失败!"}
      */
-    public function evaluateInfoAction($eid) {
-        if(!$eid) {
+    public function evaluateInfoAction() {
+        if(!$this->_params['enroll_id']) {
             return $this->responseJson("FAILD", Lang::_M(ENROLL_ID_NO_EMPTY));
         }
         $evaluateModel = new Evaluate();
-        $enrollEvalueateInfo = $evaluateModel->findOne(array('enroll_id' => $eid));
+        $enrollEvalueateInfo = $evaluateModel->findOne(array('enroll_id' => $this->_params['enroll_id']));
         if(!$enrollEvalueateInfo) {
             return $this->responseJson("FAILD", Lang::_M(EVALUATE_GET_INFO_FAILD));
         }

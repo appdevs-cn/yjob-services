@@ -161,6 +161,7 @@ class EnrollController extends BaseController {
      * @apiParam {Number} status 报名状态(100=>等待操作,200=>通过,301=>已完成,302=>放鸽子,303=>早退,400=>弃用,500=>取消,600=>备用)',
      * @apiParam {Number} position_type 岗位类型(100=>普通,200=>督导).
      * @apiParam {Number} check_status 查看状态(100=>未查看,200=>已查看)
+     * @apiParam {Number} evaluate_status 查看状态(100=>未评价,200=>已评价)
      * @apiParam {Number} sort 岗位类型(100=>默认排序,200=>点位排序).
      * @apiParam {Number} page 页码.
      * @apiParam {Number} size 每页返回数量.
@@ -172,39 +173,40 @@ class EnrollController extends BaseController {
      * {"status":"FAILD","code":"10001","msg":"获取职位报名列表失败!"}
      */
     public function listAction() {
-       $this->_params['company_id'] && $where['company_id'] = $this->_params['company_id'];
-       $this->_params['job_id'] && $where['job_id'] = $this->_params['job_id'];
-       $this->_params['job_info_id'] && $where['job_info_id'] = $this->_params['job_info_id'];
-       $this->_params['uid'] && $where['uid'] = $this->_params['uid'];
-       $this->_params['date'] && $where['date'] = $this->_params['date'];
-       $where['enroll_type'] =$this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100;
-       $this->_params['status'] && $where['status'] =$this->_params['status'];
-       $this->_params['position_type'] && $where['position_type'] = $this->_params['position_type'];
-       $this->_params['check_status'] && $where['check_status'] = $this->_params['check_status'];
-       $sort = $this->_params['sort'] ? $this->_params['sort'] : 100;
-       if($sort == 100) {
-           $order = "apply_time DESC";
-       }
-       $page = $this->_params['page'] ? $this->_params['page'] : 1;
-       $size = $this->_params['size'] ? $this->_params['size'] : 30;
-       $start = ($page - 1) * $size;
-       $enrollMode = new Enroll();
-       $totalCount = $enrollMode->getCount(['company_id' => $this->_params['company_id']]);
-       $enrollListRst = $enrollMode->findAll($where, $start, $size, $order);
-       //已查看
-       $countNVwhere = array_merge($where, array('check_status' => 100));
-       $nvCount = $enrollMode->getCount($countNVwhere);
-       $countVwhere = array_merge($where, array('check_status' => 200));
-       $vCount = $enrollMode->getCount($countVwhere);
+        $this->_params['company_id'] && $where['company_id'] = $this->_params['company_id'];
+        $this->_params['job_id'] && $where['job_id'] = $this->_params['job_id'];
+        $this->_params['job_info_id'] && $where['job_info_id'] = $this->_params['job_info_id'];
+        $this->_params['uid'] && $where['uid'] = $this->_params['uid'];
+        $this->_params['date'] && $where['work_date'] = $this->_params['date'];
+        $where['enroll_type'] =$this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100;
+        $this->_params['status'] && $where['status'] =$this->_params['status'];
+        $this->_params['position_type'] && $where['position_type'] = $this->_params['position_type'];
+        $this->_params['check_status'] && $where['check_status'] = $this->_params['check_status'];
+        $this->_params['evaluate_status'] && $where['evaluate_status'] = $this->_params['evaluate_status'];
+        $sort = $this->_params['sort'] ? $this->_params['sort'] : 100;
+        if($sort == 100) {
+            $order = "apply_time DESC";
+        }
+        $page = $this->_params['page'] ? $this->_params['page'] : 1;
+        $size = $this->_params['size'] ? $this->_params['size'] : 30;
+        $start = ($page - 1) * $size;
+        $enrollMode = new Enroll();
+        $totalCount = $enrollMode->getCount($where);
+        $enrollListRst = $enrollMode->findAll($where, $start, $size, $order);
+        //已查看
+        $countNVwhere = array_merge($where, array('check_status' => 100));
+        $nvCount = $enrollMode->getCount($countNVwhere);
+        $countVwhere = array_merge($where, array('check_status' => 200));
+        $vCount = $enrollMode->getCount($countVwhere);
 
-       if($enrollListRst) {
-            $enrollList['list'] = $enrollListRst->toArray();
-            $enrollList['totalCount'] = $totalCount ? $totalCount : 0;
-            $enrollList['vcount'] = $vCount;
-            $enrollList['nvcount'] = $nvCount;
-            return $this->responseJson("SUCCESS", Lang::_M(ENROLL_LIST_SUCCESS), $enrollList);
-       }
-       return $this->responseJson("FAILD", Lang::_M(ENROLL_LIST_EMPTY));
+        if($enrollListRst) {
+             $enrollList['list'] = $enrollListRst->toArray();
+             $enrollList['totalCount'] = $totalCount ? $totalCount : 0;
+             $enrollList['vcount'] = $vCount;
+             $enrollList['nvcount'] = $nvCount;
+             return $this->responseJson("SUCCESS", Lang::_M(ENROLL_LIST_SUCCESS), $enrollList);
+        }
+        return $this->responseJson("FAILD", Lang::_M(ENROLL_LIST_EMPTY));
     }
 
     /**
