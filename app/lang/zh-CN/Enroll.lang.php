@@ -10,6 +10,7 @@ $_LANG['ENROLL_EXISTS'] = ['codes'=> 0, 'msg' => '已报名!'];
 $_LANG['ENROLL_GET_COUNT_SUCCESS'] = ['codes'=> 0, 'msg' => '获取职位报名数成功!'];
 $_LANG['ENROLL_NOT_EXISTS'] = ['codes'=> 0, 'msg' => '未报名!'];
 $_LANG['ENROLL_FAILD'] = ['codes'=> 10001, 'msg' => '报名失败!'];
+$_LANG['ENROLL_CID_NOT_EMPTY'] = ['codes'=> 10001, 'msg' => '报名失败!'];
 $_LANG['ENROLL_NO_REPEAT'] = ['codes'=> 10001, 'msg' => '不能重复报名!'];
 $_LANG['ENROLL_INFO_UPDATE_FAILD'] = ['codes'=> 10001, 'msg' => '报名信息更新失败!'];
 $_LANG['ENROLL_INFO_UPDATE_SUCCESS'] = ['codes'=> 0, 'msg' => '报名信息更新成功!'];

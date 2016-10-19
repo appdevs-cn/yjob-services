@@ -33,6 +33,7 @@ class EnrollController extends BaseController {
      * @apiParam {Number} uid 用户ID.
      * @apiParam {Number} job_id 职位ID.
      * @apiParam {Number} job_info_id 点位ID.
+     * @apiParam {Number} company_id 企业ID.
      * @apiParam {Number} resume_id 简历ID
      * @apiParam {Number} enroll_type 报名方式(100=>正常报名,200=>续约报名).
      * @apiParam {Number} date 日期.
@@ -59,10 +60,14 @@ class EnrollController extends BaseController {
         if(!$this->_params['date']) {
             return $this->responseJson("FAILD", Lang::_M(ENROLL_DATE_NOT_EMPTY));
         }
+         if(!$this->_params['company_id']) {
+            return $this->responseJson("FAILD", Lang::_M(ENROLL_CID_NOT_EMPTY));
+        }
         $existWhere['uid'] = $this->_params['uid'];
         $existWhere['job_info_id'] = $this->_params['job_info_id'];
         $existWhere['resume_id'] = $this->_params['resume_id'];
-        //$existWhere['work_date'] = $this->_params['date'];
+        $existWhere['$gte'] = ['work_date'=>$this->_params['date']];
+        $this->_params['enroll_type'] && $existWhere['enroll_type'] = $this->_params['enroll_type'];
         $enrollModel = new Enroll();
         if($enrollModel->findOne($existWhere)) {
             return $this->responseJson("FAILD", Lang::_M(ENROLL_NO_REPEAT));
@@ -178,7 +183,7 @@ class EnrollController extends BaseController {
         $this->_params['job_info_id'] && $where['job_info_id'] = $this->_params['job_info_id'];
         $this->_params['uid'] && $where['uid'] = $this->_params['uid'];
         $this->_params['date'] && $where['work_date'] = $this->_params['date'];
-        $where['enroll_type'] =$this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100;
+        $where['enroll_type'] = $this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100;
         $this->_params['status'] && $where['status'] =$this->_params['status'];
         $this->_params['position_type'] && $where['position_type'] = $this->_params['position_type'];
         $this->_params['check_status'] && $where['check_status'] = $this->_params['check_status'];
@@ -323,7 +328,6 @@ class EnrollController extends BaseController {
         $enrollCount = $enrollModel->getCount($where);
         return $this->responseJson("SUCCESS", Lang::_M(ENROLL_GET_COUNT_SUCCESS), ['enrollCount' => $enrollCount]);
     }
-
 
     /**
      * @apiVersion 1.0.0

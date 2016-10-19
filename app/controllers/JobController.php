@@ -1246,9 +1246,6 @@ class JobController extends BaseController {
         if(!$this->_params['sign_address']) {
             return $this->responseJson("FAILD",Lang::_M(SIGN_ADDR_NO_EMPTY));
         }
-        if(!$this->_params['sign_pic'] || count($this->_params['sign_pic'] ) > 3) {
-            return $this->responseJson("FAILD",Lang::_M(SIGN_PIC_NO_EMPTY));
-        }
         $enRollModel = new Enroll();
         $ewhere = 'id='.$this->_params['enroll_id'];
         $rInfo = $enRollModel->findOne($ewhere)->toArray();
@@ -1270,7 +1267,7 @@ class JobController extends BaseController {
         $workInfo = $workModel->findOne($where);
         if($workInfo) {
             $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
-            $signInfo['sign_pic'] = $this->_params['sign_pic'];
+            $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
             $signInfo['sign_address'] = $this->_params['sign_address'];
             $signInfo['remark'] = $this->_params['remark'];
             $signInfo['work_date'] = $rInfo['work_date'];
@@ -1278,7 +1275,7 @@ class JobController extends BaseController {
         } else {
             $signInfo['sign_type'] = $this->_params['sign_type'] ? $this->_params['sign_type'] : 100;
             $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
-            $signInfo['sign_pic'] = $this->_params['sign_pic'];
+            $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
             $signInfo['sign_address'] = $this->_params['sign_address'];
             $signInfo['uid'] = $this->_params['uid'];
             $signInfo['enroll_id'] = $this->_params['enroll_id'];
