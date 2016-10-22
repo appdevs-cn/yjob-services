@@ -268,13 +268,12 @@ class JobController extends BaseController {
         if($job->save($jobData)) {
             $jobId = $job->id;
             $jobInfo = new JobInfo();
-            
             foreach ($this->_params['stations_info'] as $k => $v) {
-                $v['start_date'] = strtotime($v['start_date']);
-                $v['end_date'] = strtotime($v['end_date']);
+                $v['start_date'] = $v['start_date'];
+                $v['end_date'] = $v['end_date'];
                 $v['category_id'] = $jobData['category_id'];
                 $v['job_id'] = $jobId;
-                if(!$jobInfo->save($v)) {
+                if(!$a = $jobInfo->save($v)) {
                     $this->db->rollback();
                     return $this->responseJson("FAILD",Lang::_M(JOB_CREATE_FAILD));
                 }
