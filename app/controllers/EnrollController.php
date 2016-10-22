@@ -183,7 +183,7 @@ class EnrollController extends BaseController {
         $this->_params['job_info_id'] && $where['job_info_id'] = $this->_params['job_info_id'];
         $this->_params['uid'] && $where['uid'] = $this->_params['uid'];
         $this->_params['date'] && $where['work_date'] = $this->_params['date'];
-        $where['enroll_type'] = $this->_params['enroll_type'] ? $this->_params['enroll_type'] : 100;
+        $this->_params['enroll_type'] && $where['enroll_type'] = $this->_params['enroll_type'];
         $this->_params['status'] && $where['status'] =$this->_params['status'];
         $this->_params['position_type'] && $where['position_type'] = $this->_params['position_type'];
         $this->_params['check_status'] && $where['check_status'] = $this->_params['check_status'];
