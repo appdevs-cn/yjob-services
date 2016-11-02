@@ -14,7 +14,6 @@ $_LANG['JOB_CONTACTS_MOBILE_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '联系手�
 $_LANG['JOB_CONTACTS_ADDR_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '联系地址不能为空!'];
 $_LANG['JOB_RECEIVE_MOBILE_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '接收通知手机不能为空!'];
 $_LANG['JOB_RECEIVE_EMAIL_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '接收通知邮箱不能为空!'];
-
 $_LANG['JOB_SUPERVISOR_NUMS_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '督导报名人数不能为空!'];
 $_LANG['JOB_SUPERVISOR_MONEY_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '督导薪资不能为空!'];
 $_LANG['JOB_SUPERVISOR_WAGE_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '督导薪资计算方式不能为空!'];
@@ -23,24 +22,20 @@ $_LANG['JOB_PARTTIME_NUMS_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '兼职报名�
 $_LANG['JOB_PARTTIME_MONEY_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '兼职薪资不能为空!'];
 $_LANG['JOB_PARTTIME_WAGE_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '兼职薪资计算方式不能为空!'];
 $_LANG['JOB_PARTTIME_TYPE_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '兼职薪资结算方式不能为空!'];
-
 $_LANG['JOB_PROVINCE_ID_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位所在省ID不能为空!'];
 $_LANG['JOB_CITY_ID_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位所在市ID不能为空!'];
 $_LANG['JOB_DISTRICT_ID_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位所在区ID不能为空!'];
 $_LANG['JOB_DISTRICT_ID_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位所在区ID不能为空!'];
 $_LANG['JOB_BUSINESS_DISTRICT_ID_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位所在商圈ID不能为空!'];
-
 $_LANG['JOB_ADDR_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位地址不能为空!'];
 $_LANG['JOB_LNG_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位经度不能为空!'];
 $_LANG['JOB_LAT_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '点位纬度不能为空!'];
-
 $_LANG['JOB_WORK_START_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '上班时间不能为空!'];
 $_LANG['JOB_WORK_END_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '下班时间不能为空!'];
 $_LANG['JOB_FALL_IN_TIME_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '集合时间不能为空!'];
 $_LANG['JOB_FALL_IN_ADDR_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '集合地址不能为空!'];
 $_LANG['JOB_CREATE_SUCCESS'] = ['codes'=> 0, 'msg' => '职位发布成功!'];
 $_LANG['JOB_CREATE_FAILD'] = ['codes'=> 10001, 'msg' => '职位发布失败!'];
-
 $_LANG['JOB_INFO_UPDATE_SUCCESS'] = ['codes'=> 0, 'msg' => '修改成功!'];
 $_LANG['JOB_INFO_UPDATE_FAILD'] = ['codes'=> 10001, 'msg' => '修改失败!'];
 $_LANG['JOB_COMPANY_ID_NO_EMPTY'] = ['codes'=> 10001, 'msg' => '企业ID不能为空!'];
@@ -95,10 +90,4 @@ $_LANG['EVALUATE_GET_INFO_FAILD'] = ['codes'=> 10001, 'msg' => '获取评价详�
 $_LANG['EVALUATE_GET_INFO_SUCCESS'] = ['codes'=> 0, 'msg' => '获取评价详情成功!'];
 $_LANG['JOB_GET_RATE_SUCCESS'] = ['codes'=> 0, 'msg' => '获取评分成功!'];
 $_LANG['JOB_DELETE_SUCCESS'] = ['codes'=> 0, 'msg' => '删除成功!'];
-
-
-
-
-
-
 return $_LANG;

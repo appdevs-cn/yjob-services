@@ -95,10 +95,7 @@ class BaseRemote {
                 $this->setClientInfoByName($clientInfo);
             }
         }
-        //获取token
-        if($getToken){
-          $this->get_Token();
-        }
+
         if($this->_url && $this->_method && $this->_charset){
             $requestUrl = $this->_url;
             //post get 分别处理

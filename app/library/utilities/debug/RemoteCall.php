@@ -14,7 +14,7 @@ class RemoteCall {
         if(!$RequestInfo) {
             return false;
         }
-        $rq = new \Models\RemoteCall();	
+        $rq = new \Models\RemoteCall();
         $rq->api_name = $RequestInfo['api_name'];
         $rq->api_url = $RequestInfo['api_url'];
         $rq->request_method = strtoupper($RequestInfo['request_method']);

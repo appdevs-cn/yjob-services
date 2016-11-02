@@ -2,8 +2,11 @@
 namespace Controllers;
 
 use Models\Enroll;
+
 use Models\Evaluate;
+
 use Models\Work;
+
 use Phalcon\Mvc\Controller;
 
 use Utilities\Common\Lang;
@@ -189,6 +192,7 @@ class JobController extends BaseController {
         $jobData['receive_mobile'] = $this->_params['receive_info']['receive_mobile'];
         $jobData['push_email'] = $this->_params['receive_info']['push_email'] ? $this->_params['receive_info']['push_email'] : 100;
         $jobData['push_sms'] = $this->_params['receive_info']['push_sms'] ? $this->_params['receive_info']['push_sms'] : 100;
+        
         if($this->_params['stations_info']) {
             foreach($this->_params['stations_info'] as $sk => &$sv) {
                 if(!$sv['supervisor_nums']) {
@@ -267,13 +271,16 @@ class JobController extends BaseController {
         $job = new Job();
         if($job->save($jobData)) {
             $jobId = $job->id;
-            $jobInfo = new JobInfo();
             foreach ($this->_params['stations_info'] as $k => $v) {
+                $jobInfo = new JobInfo();
                 $v['start_date'] = $v['start_date'];
                 $v['end_date'] = $v['end_date'];
                 $v['category_id'] = $jobData['category_id'];
+                $v['job_type'] = $jobData['job_type'];
+                $v['sign_nums'] = 0;
+                $v['is_delete'] = 100;
                 $v['job_id'] = $jobId;
-                if(!$a = $jobInfo->save($v)) {
+                if(!$jobInfo->save($v)) {
                     $this->db->rollback();
                     return $this->responseJson("FAILD",Lang::_M(JOB_CREATE_FAILD));
                 }
@@ -1652,20 +1659,20 @@ class JobController extends BaseController {
      * @apiUse Response
      * @apiSuccessExample {json} 成功返回样例:
      * {"status":"SUCCESS","code":"0","msg":"获取评价详情成功!","data":{
-    "id": "1",
-    "uid": "10001",
-    "enroll_id": "1",
-    "evaluate_uid": "9999",
-    "evaluate_time": "1472314297",
-    "evaluate_content": "这小伙儿不错!!",
-    "punctual": "4",
-    "earnest": "1",
-    "effect": "0",
-    "performance": "0",
-    "ability": "0",
-    "create_time": "1472313835"
-    }
-    }
+        "id": "1",
+        "uid": "10001",
+        "enroll_id": "1",
+        "evaluate_uid": "9999",
+        "evaluate_time": "1472314297",
+        "evaluate_content": "这小伙儿不错!!",
+        "punctual": "4",
+        "earnest": "1",
+        "effect": "0",
+        "performance": "0",
+        "ability": "0",
+        "create_time": "1472313835"
+        }
+      }
      * @apiUse Response
      * @apiErrorExample {json} 失败返回样例
      * {"status":"FAILD","code":"10001","msg":"获取评价详情失败!"}

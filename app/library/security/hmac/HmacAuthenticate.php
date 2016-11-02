@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Hash Message Authentication Code
- *
- * @package Security
- * @author Jete O'Keeffe <jete.okeeffe@gmail.com>
- * @version 1.0
- */
-
 namespace security\hmac;
 
 class HmacAuthenticate {
@@ -20,7 +12,7 @@ class HmacAuthenticate {
 	 */
 	public function __construct($type, $key) {
 		$this->_type = $type;
-		$this->_key = $key;	
+		$this->_key = $key;
 	}
 
 	/**
