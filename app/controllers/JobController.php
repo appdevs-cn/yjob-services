@@ -358,13 +358,13 @@ class JobController extends BaseController {
      * {"status":"FAILD","code":"10001","msg":"职位描述不能为空"}
      */
     public function updateAction() {
-        $jobId = $this->_params['jobid'];
+        $jobId = $this->_params['job_id'];
         $jobInfo = Job::findFirst($jobId);
         if(!$jobInfo) {
             return $this->responseJson("FAILD",Lang::_M(JOB_INFO_NO_EXISE));
         }
-        $jobData['company_id'] = $this->_params['company_id'];
-        $jobData['company_name'] = $this->_params['company_name'];
+        $this->_params['company_id'] && $jobData['company_id'] = $this->_params['company_id'];
+        $this->_params['company_name'] && $jobData['company_name'] = $this->_params['company_name'];
         $jobData['category_id'] = $this->_params['category_id'];
         $jobData['job_name'] = $this->_params['job_name'];
         $jobData['category_name'] = $this->_params['category_name'];
@@ -395,7 +395,7 @@ class JobController extends BaseController {
         }
         if($this->_params['stations_info']) {
             foreach($this->_params['stations_info'] as $sk => $sv) {
-                $Jinfo = JobInfo::findFirst($sv['job_info_id']);
+		        $Jinfo = JobInfo::findFirst($sv['job_info_id']);
                 $v['start_date'] = $sv['start_date'];
                 $v['end_date'] = $sv['end_date'];
                 $v['category_id'] = $jobData['category_id'];
@@ -1037,16 +1037,16 @@ class JobController extends BaseController {
 			unset($job);
 			continue;
 		}
-            $sSql = 'select min(start_date) as start_date, max(end_date) as end_date from ys_jobs_info where job_id ='.$job['id'];
-            $jobInfoObject = new JobInfo();
-            $InfoTmp =  new Resultset(null, $jobInfoObject, $jobInfoObject->getReadConnection()->query($sSql));
-            $sDateAndEdate =  $InfoTmp->toArray();
-            $job['start_date'] = $sDateAndEdate[0]['start_date'];
-            $job['end_date'] = $sDateAndEdate[0]['end_date'];
-            if($this->_params['order_type'] != 200) {
-                $jobList[$job[$sort]] = $job;
+                $sSql = 'select min(start_date) as start_date, max(end_date) as end_date from ys_jobs_info where job_id ='.$job['id'];
+                $jobInfoObject = new JobInfo();
+                $InfoTmp =  new Resultset(null, $jobInfoObject, $jobInfoObject->getReadConnection()->query($sSql));
+                $sDateAndEdate =  $InfoTmp->toArray();
+                $job['start_date'] = $sDateAndEdate[0]['start_date'];
+                $job['end_date'] = $sDateAndEdate[0]['end_date'];
+                if($this->_params['order_type'] != 200) {
+                    $jobList[$job[$sort]] = $job;
+                }
             }
-        }
             krsort($jobList);
         }
         $return = array_values($JobTmp);
