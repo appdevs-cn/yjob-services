@@ -799,7 +799,9 @@ class JobController extends BaseController {
             $info['job_desc'] = htmlspecialchars($info['job_desc']);
         }
         $jobInfoModel = new JobInfo();
-        $joblist = $jobInfoModel->find('job_id='.$job_id)->toArray();
+        $where['job_id'] = $job_id;
+        $where['is_delete'] = 100;
+        $joblist = $jobInfoModel->findAll($where)->toArray();
         $info['list'] = $joblist ? $joblist : array();
         return $this->responseJson("SUCCESS",Lang::_M(JOB_GET_LIST_SUCCESS), $info);
     }
