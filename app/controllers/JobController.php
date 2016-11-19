@@ -395,13 +395,13 @@ class JobController extends BaseController {
         }
         if($this->_params['stations_info']) {
             foreach($this->_params['stations_info'] as $sk => $v) {
-		        $Jinfo = JobInfo::findFirst($v['job_info_id']);
                 $v['category_id'] = $jobData['category_id'];
                 $v['job_type'] = $jobData['job_type'];
                 $v['sign_nums'] = 0;
                 $v['is_delete'] = 100;
                 $v['job_id'] = $jobId;
-                if($Jinfo) {
+                if($v['job_info_id']) {
+                    $Jinfo = JobInfo::findFirst($v['job_info_id']);
                     $upStatus = $Jinfo->save($v);
                 } else {
                     $jobStationInfo = new JobInfo();
