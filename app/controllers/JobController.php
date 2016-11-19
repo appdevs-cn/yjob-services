@@ -394,10 +394,8 @@ class JobController extends BaseController {
             return $this->responseJson("FAILD",Lang::_M(JOB_INFO_UPDATE_FAILD));
         }
         if($this->_params['stations_info']) {
-            foreach($this->_params['stations_info'] as $sk => $sv) {
-		        $Jinfo = JobInfo::findFirst($sv['job_info_id']);
-                $v['start_date'] = $sv['start_date'];
-                $v['end_date'] = $sv['end_date'];
+            foreach($this->_params['stations_info'] as $sk => $v) {
+		        $Jinfo = JobInfo::findFirst($v['job_info_id']);
                 $v['category_id'] = $jobData['category_id'];
                 $v['job_type'] = $jobData['job_type'];
                 $v['sign_nums'] = 0;
@@ -416,7 +414,7 @@ class JobController extends BaseController {
         }
         if($this->_params['del_job_ids']) {
             foreach($this->_params['del_job_ids'] as $idk => $idv) {
-                $Jinfo = JobInfo::findFirst($sv['job_info_id']);
+                $Jinfo = JobInfo::findFirst($idv);
                 $Jinfo->is_delete = 200;
                 if(!$Jinfo->save()) {
                     return $this->responseJson("FAILD",Lang::_M(JOB_INFO_UPDATE_FAILD));
