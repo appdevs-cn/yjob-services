@@ -1317,7 +1317,7 @@ class JobController extends BaseController {
                 $countData['sign_out'] = $counterInfo['sign_out'] + 1;
                 $countData['sign_out_valid'] =  $counterInfo['sign_out_valid'] + 1;
             }
-            $cRst = $counterInfo->save($countData);
+            $cRst = $countModel->save($countData);
         }
 
         file_put_contents("/tmp/counter_info", var_export($cRst, true), FILE_APPEND);
