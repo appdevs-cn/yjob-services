@@ -1311,14 +1311,15 @@ class JobController extends BaseController {
             $cRst = $countModel->save($countData);
         } else {
             if($signInfo['sign_type'] == 100) {
-                $countData['sign_in'] = $counterInfo['sign_in'] + 1;
-                $countData['sign_in_valid'] =  $counterInfo['sign_in_valid'] + 1;
+                $counterInfo->sign_in = $counterInfo->sign_in + 1;
+                $counterInfo->sign_in_valid =  $counterInfo->sign_in_valid + 1;
             } else {
-                $countData['sign_out'] = $counterInfo['sign_out'] + 1;
-                $countData['sign_out_valid'] =  $counterInfo['sign_out_valid'] + 1;
+                $counterInfo->sign_out = $counterInfo->sign_out + 1;
+                $counterInfo->sign_out_valid =  $counterInfo->sign_out_valid + 1;
             }
-            $cRst = $countModel->save($countData);
+            $cRst = $counterInfo->save();
         }
+
 
         file_put_contents("/tmp/counter_info", var_export($cRst, true), FILE_APPEND);
 
