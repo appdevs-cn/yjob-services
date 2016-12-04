@@ -1281,17 +1281,17 @@ class JobController extends BaseController {
                 return $this->responseJson("FAILD",Lang::_M(SIGN_TYPE_FAILD));
             }
         }
-        $where['work_date'] = $rInfo['work_date'];
-        $where['sign_type'] = $this->_params['sign_type'];
-        $workInfo = $workModel->findOne($where);
-        if($workInfo) {
-            $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
-            $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
-            $signInfo['sign_address'] = $this->_params['sign_address'];
-            $signInfo['remark'] = $this->_params['remark'];
-            $signInfo['work_date'] = $rInfo['work_date'];
-            $rs = $workInfo->save($signInfo);
-        } else {
+//        $where['work_date'] = $rInfo['work_date'];
+//        $where['sign_type'] = $this->_params['sign_type'];
+//        $workInfo = $workModel->findOne($where);
+//        if($workInfo) {
+//            $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
+//            $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
+//            $signInfo['sign_address'] = $this->_params['sign_address'];
+//            $signInfo['remark'] = $this->_params['remark'];
+//            $signInfo['work_date'] = $rInfo['work_date'];
+//            $rs = $workInfo->save($signInfo);
+       // } else {
             $signInfo['sign_type'] = $this->_params['sign_type'] ? $this->_params['sign_type'] : 100;
             $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
             $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
@@ -1303,7 +1303,7 @@ class JobController extends BaseController {
             $signInfo['remark'] = $this->_params['remark'];
             $signInfo['work_date'] = $rInfo['work_date'];
             $rs = $workModel->save($signInfo);
-        }
+        //}
         if(!$rs) {
             $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_FAILD' : 'SIGN_OUT_FAILD';
             return $this->responseJson("FAILD",Lang::_M($T));
@@ -1382,7 +1382,7 @@ class JobController extends BaseController {
 
         $workModel = new Work();
         $count = $workModel->getCount($where);
-        $signList = $workModel->findAll($where,$start, $size)->toArray();
+        $signList = $workModel->findAll($where,$start, $size, "sign_time DESC")->toArray();
         if($count == 0) {
             return $this->responseJson("FAILD",Lang::_M(JOB_INFO_IDS_NO_EMPTY));
         }
