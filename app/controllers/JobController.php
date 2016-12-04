@@ -1300,8 +1300,15 @@ class JobController extends BaseController {
         $countWhere['job_id'] = $this->_params['job_id'];
         $countWhere['job_info_id'] = $this->_params['job_info_id'];
         $counterInfo = $countModel->findOne($countWhere);
-        file_put_contents("/tmp/counter_info", var_export($counterInfo, true), FILE_APPEND);
-        
+        if(!$counterInfo) {
+            $key = $signInfo['sign_type'] == 100 ? 'sign_in' : 'sign_out';
+            $countData[$key] = 1;
+            $countData['job_id'] = $this->_params['job_id'];
+            $countData['job_info_id'] = $this->_params['job_info_id'];
+            $cRst = $countModel->save($countData);
+        }
+        file_put_contents("/tmp/counter_info", var_export($cRst, true), FILE_APPEND);
+
         $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_SUCCESS' : 'SIGN_OUT_SUCCESS';
         return $this->responseJson("SUCCESS",Lang::_M($T));
     }
