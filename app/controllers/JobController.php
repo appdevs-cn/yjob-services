@@ -1281,33 +1281,27 @@ class JobController extends BaseController {
                 return $this->responseJson("FAILD",Lang::_M(SIGN_TYPE_FAILD));
             }
         }
-//        $where['work_date'] = $rInfo['work_date'];
-//        $where['sign_type'] = $this->_params['sign_type'];
-//        $workInfo = $workModel->findOne($where);
-//        if($workInfo) {
-//            $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
-//            $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
-//            $signInfo['sign_address'] = $this->_params['sign_address'];
-//            $signInfo['remark'] = $this->_params['remark'];
-//            $signInfo['work_date'] = $rInfo['work_date'];
-//            $rs = $workInfo->save($signInfo);
-       // } else {
-            $signInfo['sign_type'] = $this->_params['sign_type'] ? $this->_params['sign_type'] : 100;
-            $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
-            $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
-            $signInfo['sign_address'] = $this->_params['sign_address'];
-            $signInfo['uid'] = $this->_params['uid'];
-            $signInfo['enroll_id'] = $this->_params['enroll_id'];
-            $signInfo['job_id'] = $this->_params['job_id'];
-            $signInfo['job_info_id'] = $this->_params['job_info_id'];
-            $signInfo['remark'] = $this->_params['remark'];
-            $signInfo['work_date'] = $rInfo['work_date'];
-            $rs = $workModel->save($signInfo);
-        //}
+        $signInfo['sign_type'] = $this->_params['sign_type'] ? $this->_params['sign_type'] : 100;
+        $signInfo['sign_time'] = $this->_params['sign_time'] ? $this->_params['sign_time'] : time();
+        $this->_params['sign_pic'] && $signInfo['sign_pic'] = $this->_params['sign_pic'];
+        $signInfo['sign_address'] = $this->_params['sign_address'];
+        $signInfo['uid'] = $this->_params['uid'];
+        $signInfo['enroll_id'] = $this->_params['enroll_id'];
+        $signInfo['job_id'] = $this->_params['job_id'];
+        $signInfo['job_info_id'] = $this->_params['job_info_id'];
+        $signInfo['remark'] = $this->_params['remark'];
+        $signInfo['work_date'] = $rInfo['work_date'];
+        $rs = $workModel->save($signInfo);
         if(!$rs) {
             $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_FAILD' : 'SIGN_OUT_FAILD';
             return $this->responseJson("FAILD",Lang::_M($T));
         }
+        $countModel = new JobCounter();
+        $countWhere['job_id'] = $this->_params['job_id'];
+        $countWhere['job_info_id'] = $this->_params['job_info_id'];
+        $counterInfo = $countModel->findOne($countWhere);
+        file_put_contents("/tmp/counter_info", var_export($counterInfo, true), FILE_APPEND);
+        
         $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_SUCCESS' : 'SIGN_OUT_SUCCESS';
         return $this->responseJson("SUCCESS",Lang::_M($T));
     }
