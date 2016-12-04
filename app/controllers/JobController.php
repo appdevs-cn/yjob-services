@@ -1301,12 +1301,25 @@ class JobController extends BaseController {
         $countWhere['job_info_id'] = $this->_params['job_info_id'];
         $counterInfo = $countModel->findOne($countWhere);
         if(!$counterInfo) {
-            $key = $signInfo['sign_type'] == 100 ? 'sign_in' : 'sign_out';
-            $countData[$key] = 1;
+            $countData['sign_in'] =  $signInfo['sign_type'] == 100 ? 1 : 0;
+            $countData['sign_out'] =  $signInfo['sign_type'] == 200 ? 1 : 0;
+            $countData['sign_in_valid'] =  $signInfo['sign_type'] == 100 ? 1 : 0;
+            $countData['sign_out_valid'] =  $signInfo['sign_type'] == 200 ? 1 : 0;
             $countData['job_id'] = $this->_params['job_id'];
             $countData['job_info_id'] = $this->_params['job_info_id'];
+            $countData['evaluate'] = 0;
             $cRst = $countModel->save($countData);
+        } else {
+            if($signInfo['sign_type'] == 100) {
+                $countData['sign_in'] = $counterInfo['sign_in'] + 1;
+                $countData['sign_in_valid'] =  $counterInfo['sign_in_valid'] + 1;
+            } else {
+                $countData['sign_out'] = $counterInfo['sign_out'] + 1;
+                $countData['sign_out_valid'] =  $counterInfo['sign_out_valid'] + 1;
+            }
+            $cRst = $counterInfo->save($countData);
         }
+
         file_put_contents("/tmp/counter_info", var_export($cRst, true), FILE_APPEND);
 
         $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_SUCCESS' : 'SIGN_OUT_SUCCESS';
