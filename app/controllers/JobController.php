@@ -1319,12 +1319,12 @@ class JobController extends BaseController {
             }
             $cRst = $counterInfo->save();
         }
-
-
-        file_put_contents("/tmp/counter_info", var_export($cRst, true), FILE_APPEND);
-
-        $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_SUCCESS' : 'SIGN_OUT_SUCCESS';
-        return $this->responseJson("SUCCESS",Lang::_M($T));
+        if($rs && $cRst) {
+            $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_SUCCESS' : 'SIGN_OUT_SUCCESS';
+            return $this->responseJson("SUCCESS",Lang::_M($T));
+        }
+        $T = $this->_params['sign_type'] == 100 ? 'SIGN_IN_FAILD' : 'SIGN_OUT_FAILD';
+        return $this->responseJson("FAILD",Lang::_M($T));
     }
 
     /**
