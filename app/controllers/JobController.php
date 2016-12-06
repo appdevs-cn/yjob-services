@@ -1776,7 +1776,7 @@ class JobController extends BaseController {
             $workModel = new Work();
             $wwhere['job_info_id'] = $jinfo['id'];
             $wwhere['job_id'] = $jinfo['job_id'];
-            $workSignList = $workModel->findAll($wwhere)->toArray();
+            $enrollListRst = $workModel->findAll($where, null, null, null, 'uid');
             $workSignInCounter = $workSignInValidCounter =  $workSignOutCounter = $workSignOutValidCounter = 0;
             if($workSignList) {
                 foreach($workSignList as $workSignKey => $signInfo) {

@@ -99,7 +99,7 @@ class BaseModel extends  \Phalcon\Mvc\Model {
         return $this->getReadConnection()->query($sql);
     }
 
-    public function getCount($where, $from){
+    public function getCount($where, $from, $groupBy = ''){
         $table = $from ? $from : $this->table;
         if ($where){
             $where = array($this->transWhere($where)) ;
@@ -107,6 +107,9 @@ class BaseModel extends  \Phalcon\Mvc\Model {
             $where = '1';
         }
         $sql='select count(1) as totalCount from '.$table .' where '.$where['0'];
+        if($groupBy) {
+            $sql .= " GROUP BY ".$groupBy;
+        }
         $result = $this->exec($sql);
         return isset($result[0]) ? $result[0]['totalCount'] : 0;
     }
@@ -174,7 +177,7 @@ class BaseModel extends  \Phalcon\Mvc\Model {
      *
      *  数组格式的查询条件不支持 OR 查询，若需要 OR 查询或查询条件较复杂，可选择字符串的where查询
      */
-    public function findAll($where=null, $offset=0 , $limit=null, $order=null) {
+    public function findAll($where=null, $offset=0 , $limit=null, $order=null, $groupBy = null) {
         $where = array($this->transWhere($where));
         if(!is_null($order)) {
             $where['order'] = $order;
@@ -187,6 +190,10 @@ class BaseModel extends  \Phalcon\Mvc\Model {
         if(!is_null($offset)) {
             $where['offset'] = $offset;
         }
+        if(!is_null($groupBy)) {
+            $where['group'] = $groupBy;
+        }
+
         return self::find($where);
     }
 
