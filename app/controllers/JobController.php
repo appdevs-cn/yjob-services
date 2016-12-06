@@ -1759,46 +1759,61 @@ class JobController extends BaseController {
         if(!$this->_params['job_id']) {
             return $this->responseJson("FAILD", Lang::_M(JOB_IDS_NO_EMPTY));
         }
-        //应签到
         $JobTeamModel = new JobTeam();
         $where[] = 'job_id='.$this->_params['job_id'];
         $this->_params['job_info_id'] && $where[] = 'id='.$this->_params['job_info_id'];
-            $jobInfoObject = new JobInfo();
-            $jonInfoList = $jobInfoObject->find(implode(' AND ', $where))->toArray();
+        $jobInfoObject = new JobInfo();
+        $jonInfoList = $jobInfoObject->find(implode(' AND ', $where))->toArray();
         if(!$jonInfoList) {
+            return $this->responseJson("FAILD", Lang::_M(JOB_IDS_NO_EMPTY));
         }
         foreach($jonInfoList as $jinfoK => $jinfo) {
             $jwhere['job_info_id'] = $jinfo['id'];
+            $jwhere['type'] = 100;
+            //应签到
             $jobTeamUserCount = $JobTeamModel->getCount($jwhere);
-            $jobTeamUserCount = 30;
             //实际签到
-            $jobCounter = new JobCounter();
-            $counterInfo = $jobCounter->findOne($jwhere);
+            $workModel = new Work();
+            $wwhere['job_info_id'] = $jinfo['id'];
+            $wwhere['job_id'] = $jinfo['job_id'];
+            $workSignList = $workModel->findAll($wwhere)->toArray();
+            $workSignInCounter = $workSignInValidCounter =  $workSignOutCounter = $workSignOutValidCounter = 0;
+            if($workSignList) {
+                foreach($workSignList as $workSignKey => $signInfo) {
+                    $signInfo['sign_type'] == 100 && $workSignInCounter++;
+                    ($signInfo['sign_type'] == 100 && $signInfo['confirm_status'] == 100) && $workSignInValidCounter++;
+                    $signInfo['sign_type'] == 200 && $workSignOutCounter++;
+                    ($signInfo['sign_type'] == 200 && $signInfo['confirm_status'] == 100) && $workSignOutValidCounter++;
+                }
+            }
             //签到率
-            $return['list'][$jinfo['id']]['sign_in_rate'] = round(($counterInfo->sign_in / $jobTeamUserCount) * 100);
+            $return['list'][$jinfo['id']]['sign_in_rate'] = round(($workSignInCounter / $jobTeamUserCount) * 100);
             //签到人数
-            $return['list'][$jinfo['id']]['sign_in'] = $counterInfo->sign_in ? $counterInfo->sign_in : 0;
+            $return['list'][$jinfo['id']]['sign_in'] = $workSignInCounter ? $workSignInCounter : 0;
             //有效签到人数
-            $return['list'][$jinfo['id']]['sign_in_valid'] = $counterInfo->sign_in_valid ? $counterInfo->sign_in_valid : 0;
+            $return['list'][$jinfo['id']]['sign_in_valid'] = $workSignInValidCounter ? $workSignInValidCounter : 0;
             //签退人数
-            $return['list'][$jinfo['id']]['sign_out'] = $counterInfo->sign_out ? $counterInfo->sign_out : 0;
+            $return['list'][$jinfo['id']]['sign_out'] = $workSignOutCounter ? $workSignOutCounter : 0;
             //签退率
-            $return['list'][$jinfo['id']]['sign_out_rate'] = round(($counterInfo->sign_out / $jobTeamUserCount) * 100);
+            $return['list'][$jinfo['id']]['sign_out_rate'] = round(($workSignOutCounter / $jobTeamUserCount) * 100);
 
             //有效签退人数
-            $return['list'][$jinfo['id']]['sign_out_valid'] = $counterInfo->sign_out_valid ? $counterInfo->sign_out_valid : 0;
+            $return['list'][$jinfo['id']]['sign_out_valid'] = $workSignOutValidCounter ? $workSignOutValidCounter : 0;
+            $eModel = new Evaluate();
+            $ewhere['job_info_id'] = $jinfo['id'];
+            $ewhere['job_id'] = $jinfo['job_id'];
+            $evaluateCount = $eModel->getCount($ewhere);
             //应评价人数
             $return['list'][$jinfo['id']]['totalEveluaCount'] = $jobTeamUserCount;
             //评价人数
-            $return['list'][$jinfo['id']]['eveluaCount'] = $counterInfo->evaluate ? $counterInfo->evaluate : 0;
+            $return['list'][$jinfo['id']]['eveluaCount'] = $evaluateCount ? $evaluateCount : 0;
             //未评价数
-            $return['list'][$jinfo['id']]['fEveluaCount'] = $jobTeamUserCount - $counterInfo->evaluate;
+            $return['list'][$jinfo['id']]['fEveluaCount'] = $jobTeamUserCount - $evaluateCount;
             //未签到
-            $return['list'][$jinfo['id']]['sign_in_vitiation'] = $counterInfo->sign_in - $counterInfo->sign_in_valid;
+            $return['list'][$jinfo['id']]['sign_in_vitiation'] = $jobTeamUserCount - $workSignInCounter;
             //未签退
-            $return['list'][$jinfo['id']]['sign_out_vitiation'] = $counterInfo->sign_out - $counterInfo->sign_out_valid;
-            $eModel = new Evaluate();
-            $elist = $eModel->findAll($jwhere);
+            $return['list'][$jinfo['id']]['sign_out_vitiation'] = $jobTeamUserCount - $workSignOutCounter;
+            $elist = $eModel->findAll($ewhere);
 
             if(!$elist) {
                 continue;
@@ -1812,7 +1827,6 @@ class JobController extends BaseController {
                 $effectTmp += ($ev['effect'] / 5) * 0.2;
                 $performanceTmp  += ($ev['performance'] / 5) * 0.05;
                 $totalTmp += ($ev['punctual'] / 5) * 0.3 + ($ev['earnest'] / 5) * 0.2 + ($ev['ability'] / 5) * 0.25 + ($ev['effect'] / 5) * 0.2 + ($ev['performance'] / 5) * 0.05;
-
             }
             $return['list'][$jinfo['id']]['punctual_rate'] = round(($punctualTmp / $counterInfo->evaluate) * 100);
             $return['list'][$jinfo['id']]['earnest_rate'] = round(($earnestTmp / $counterInfo->evaluate) * 100);
@@ -1820,13 +1834,13 @@ class JobController extends BaseController {
             $return['list'][$jinfo['id']]['effect_rate'] = round(($effectTmp / $counterInfo->evaluate) * 100);
             $return['list'][$jinfo['id']]['performance_rate'] = round(($performanceTmp / $counterInfo->evaluate) * 100);
             $return['list'][$jinfo['id']]['evaelua_rate'] = round(($totalTmp / $counterInfo->evaluate) * 100);
-            $sign_in_rate = ($counterInfo->sign_in / $jobTeamUserCount) * 0.7;
-            $sign_in_valid_rate = ($counterInfo->sign_in_valid / $jobTeamUserCount) * 0.3;
+            $sign_in_rate = ($workSignInCounter / $jobTeamUserCount) * 0.7;
+            $sign_in_valid_rate = ($workSignInValidCounter/ $jobTeamUserCount) * 0.3;
             $sign_in_total = ($sign_in_rate + $sign_in_valid_rate) *0.5;
-            $sign_out_rate = ($counterInfo->sign_out / $jobTeamUserCount) * 0.6;
-            $sign_out_valid_rate = ($counterInfo->sign_out_valid / $jobTeamUserCount) * 0.4;
+            $sign_out_rate = ($workSignOutCounter / $jobTeamUserCount) * 0.6;
+            $sign_out_valid_rate = ($workSignOutValidCounter / $jobTeamUserCount) * 0.4;
             $sign_out_total = ($sign_out_rate + $sign_out_valid_rate) *0.3;
-            $evalua_rate = ($counterInfo->evaluate / $jobTeamUserCount);
+            $evalua_rate = ($evaluateCount / $jobTeamUserCount);
             $evalua_rate_total = $evalua_rate * 0.15 * 1;
             $return['list'][$jinfo['id']]['total_rate'] = ($sign_in_total + $sign_out_total + $evalua_rate_total);
             $return['total_rate'] += $return['list'][$jinfo['id']]['total_rate'];
