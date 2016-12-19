@@ -422,7 +422,7 @@ class EnrollController extends BaseController {
         if(!$eInfo) {
             return $this->responseJson("FAILD", Lang::_M(ENROLL_INFO_NOT_EMPTY));
         }
-        $updateInfo['leaveEarly'] = $this->_params['status'] == 100 ? 200 : 100;
+        $updateInfo['leaveEarly'] = $this->_params['status'] == 200 ? 200 : 100;
         $urs = $eInfo->save($updateInfo);
         return $this->responseJson("SUCCESS", Lang::_M(ENROLL_INFO_UPDATE_SUCCESS));
 
