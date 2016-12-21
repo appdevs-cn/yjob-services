@@ -663,6 +663,7 @@ class JobController extends BaseController {
         $size = $this->_params['size'] ? $this->_params['size'] : 30;
         $start = ($page - 1) * $size;
         $jobModel = new Job();
+
         $where =array(
             'company_id' => $this->_params['company_id'],
         );
@@ -1654,24 +1655,24 @@ class JobController extends BaseController {
         $enrollEvalueateInfo = $evaluateModel->findOne(array('enroll_id' => $this->_params['enroll_id']));
         $this->_params['score'] && $eInfo[$fieldName] = $this->_params['score'];
         $eInfo['uid'] = $this->_params['uid'];
-	// 马�12/16凌晨凭�印�添�两�字�
-	$eInfo['job_id'] = $this->_params['job_id'];
-	$eInfo['job_info_id'] = $this->_params['job_info_id'];
+	    // 马梓达添加
+	    $eInfo['job_id'] = $this->_params['job_id'];
+	    $eInfo['job_info_id'] = $this->_params['job_info_id'];
         $eInfo['enroll_id'] = $this->_params['enroll_id'];
         $eInfo['evaluate_uid'] = $this->_params['evaluate_uid'];
-        //$this->_params['evaluate_content'] && $eInfo['evaluate_content'] = $this->_params['evaluate_content'];
-	$eInfo['evaluate_content'] = $this->_params['evaluate_content']?$this->_params['evaluate_content']: ' ';
+//        $this->_params['evaluate_content'] && $eInfo['evaluate_content'] = $this->_params['evaluate_content'];
+//	    $eInfo['evaluate_content'] = $this->_params['evaluate_content']?$this->_params['evaluate_content']: '';
+        if(!empty($this->_params['evaluate_content'])){
+            $eInfo['evaluate_content'] = $this->_params['evaluate_content'];
+        }
         $eInfo['evaluate_time'] = time();
-	//return $eInfo;exit;
+	    //return $eInfo;exit;
         if ($enrollEvalueateInfo) {
             $rs = $enrollEvalueateInfo->save($eInfo);
         } else {
             $eInfo['create_time'] = time();
             $rs = $evaluateModel->save($eInfo);
         }
-	//$aa = $evaluateModel->getErrorMessages();
-	//file_put_contents('/tmp/1601.txt',$aa,FILE_APPEND);
-	//exit();
         if (!$rs) {
             return $this->responseJson("FAILD", Lang::_M(EVALUATE_USER_FAILD));
         }

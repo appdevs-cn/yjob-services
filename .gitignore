@@ -1,0 +1,5 @@
+app/config/dev/config.php
+app/config/production/config.php
+*.txt
+.idea
+.htaccess

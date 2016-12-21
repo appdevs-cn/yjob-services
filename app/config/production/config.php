@@ -6,12 +6,12 @@
 $settings = array(
     'database' => array(
         'adapter' => 'Mysql',
-        'host' => '127.0.0.1',
-        'username' => 'apidber',
-        'password' => 'ad2z2azs2',
+        'host' => 'localhost',
+        'username' => 'root',
+        'password' => '',
         'name' => 'apidb',
         'port' => 3306,
-        'log' => '/tmp/sql_debug',
+        'log' => 'D:tmp/sql_debug',
     ),
     "redis" => [
         "host" => "localhost",
