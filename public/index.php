@@ -35,7 +35,7 @@ try {
    // $app->setLang();
 
 //
-//    // 通过HTTP的HEADER头获取
+//    // 通过HTTP的HEADER头获取xinxi
 //    $clientId = $app->request->getHeader('API_ID');
 //    $time = $app->request->getHeader('API_TIME');
 //    $hash = $app->request->getHeader('API_HASH');

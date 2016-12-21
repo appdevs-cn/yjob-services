@@ -1,4 +1,4 @@
-app/config/dev/config.php
-app/config/production/config.php
-public/index.php
+app/config/dev/
+app/config/production/
+public/
 .idea
