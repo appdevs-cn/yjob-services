@@ -9,7 +9,7 @@ $settings = array(
         'host' => 'localhost',
         'username' => 'root',
         'password' => '',
-        'name' => 'apidb',
+        'name' => 'yservice',
         'port' => 3306,
         'log' => 'D:tmp/sql_debug',
     ),
